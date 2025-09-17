@@ -36,6 +36,10 @@ class Facturation
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $report_m_1 = null;
 
+    #[ORM\ManyToOne(inversedBy: 'facturations')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Professeur $refProfesseur = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -121,6 +125,18 @@ class Facturation
     public function setReportM1(string $report_m_1): static
     {
         $this->report_m_1 = $report_m_1;
+
+        return $this;
+    }
+
+    public function getRefProfesseur(): ?Professeur
+    {
+        return $this->refProfesseur;
+    }
+
+    public function setRefProfesseur(?Professeur $refProfesseur): static
+    {
+        $this->refProfesseur = $refProfesseur;
 
         return $this;
     }

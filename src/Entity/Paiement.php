@@ -24,6 +24,9 @@ class Paiement
     #[ORM\Column(enumType: MoyenPaiement::class)]
     private ?MoyenPaiement $moyen_paiement = null;
 
+    #[ORM\ManyToOne(inversedBy: 'paiements')]
+    private ?Professeur $refProfesseur = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -61,6 +64,18 @@ class Paiement
     public function setMoyenPaiement(MoyenPaiement $moyen_paiement): static
     {
         $this->moyen_paiement = $moyen_paiement;
+
+        return $this;
+    }
+
+    public function getRefProfesseur(): ?Professeur
+    {
+        return $this->refProfesseur;
+    }
+
+    public function setRefProfesseur(?Professeur $refProfesseur): static
+    {
+        $this->refProfesseur = $refProfesseur;
 
         return $this;
     }

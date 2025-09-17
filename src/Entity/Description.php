@@ -32,6 +32,13 @@ class Description
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $report = null;
 
+    #[ORM\ManyToOne(inversedBy: 'descriptions')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Professeur $refProfesseur = null;
+
+    #[ORM\ManyToOne(inversedBy: 'descriptions')]
+    private ?Promo $refPromo = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -105,6 +112,30 @@ class Description
     public function setReport(string $report): static
     {
         $this->report = $report;
+
+        return $this;
+    }
+
+    public function getRefProfesseur(): ?Professeur
+    {
+        return $this->refProfesseur;
+    }
+
+    public function setRefProfesseur(?Professeur $refProfesseur): static
+    {
+        $this->refProfesseur = $refProfesseur;
+
+        return $this;
+    }
+
+    public function getRefPromo(): ?Promo
+    {
+        return $this->refPromo;
+    }
+
+    public function setRefPromo(?Promo $refPromo): static
+    {
+        $this->refPromo = $refPromo;
 
         return $this;
     }
