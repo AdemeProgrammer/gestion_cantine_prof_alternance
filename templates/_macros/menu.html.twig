@@ -1,0 +1,55 @@
+{% macro menu_item(titre,route,icone) %}
+    <div class="menu-item">
+        <!--begin:Menu link-->
+        <a class="menu-link " href="{{ route }}">
+                    <span class="menu-icon">
+                        <i class="ki-duotone {{ icone }} fs-1 text-primary">
+                            {% for i in 1..20 %}
+                            <span class="path{{ i }}"></span>
+                            {% endfor %}
+                        </i>
+                    </span>
+            <span class="menu-title">{{ titre }}</span>
+        </a>
+        <!--end:Menu link-->
+        <!--begin:Menu sub-->
+    </div>
+{% endmacro %}
+{% macro sub_menu_begin(titre,icone) %}
+    <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+        <!--begin:Menu link-->
+        <span class="menu-link">
+                    <span class="menu-icon">
+                        <i class="ki-duotone {{ icone }} fs-1 text-primary">
+                            {% for i in 1..10 %}
+                                <span class="path{{ i }}"></span>
+                            {% endfor %}
+                        </i>
+                    </span>
+                    <span class="menu-title">{{ titre }}</span>
+                    <span class="menu-arrow"></span>
+                </span>
+        <!--end:Menu link-->
+        <!--begin:Menu sub-->
+        <div class="menu-sub menu-sub-accordion">
+
+
+{% endmacro %}
+{% macro sub_menu_item(titre,route) %}
+    <!--begin:Menu item-->
+    <div class="menu-item">
+        <!--begin:Menu link-->
+        <a class="menu-link" href="{{ route }}">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+            <span class="menu-title">{{ titre }}</span>
+        </a>
+        <!--end:Menu link-->
+    </div>
+    <!--end:Menu item-->
+{% endmacro %}
+{% macro sub_menu_end() %}
+        </div>
+    </div>
+{% endmacro %}

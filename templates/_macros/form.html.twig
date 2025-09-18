@@ -1,0 +1,88 @@
+{% macro input_ligne(form_input,theme=true) %}
+    <div class="row mb-6">
+        <!--begin::Label-->
+        <label class="col-md-4 col-form-label fw-semibold fs-6">{{ form_label(form_input) }}</label>
+        <!--end::Label-->
+
+        <!--begin::Col-->
+        <div class="col-md-8 fv-row fv-plugins-icon-container">
+            {% if theme %}
+            {{ form_widget(form_input, { 'attr': {'class': 'form-control form-control-lg form-control-solid  bg-opacity-80 bg-secondary'}}) }}
+            {% else %}
+            {{ form_widget(form_input) }}
+            {% endif %}
+            <div class="form-text">
+                {{ form_help(form_input) }}
+            </div>
+            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                <div data-field="country" data-validator="notEmpty">{{ form_errors(form_input) }}</div>
+            </div>
+        </div>
+        <!--end::Col-->
+    </div>
+{% endmacro %}
+
+{% macro input_select(form_input) %}
+    <div class="row mb-6">
+        <!--begin::Label-->
+        <label class="col-md-4 col-form-label fw-semibold fs-6">{{ form_label(form_input) }}</label>
+        <!--end::Label-->
+
+        <!--begin::Col-->
+        <div class="col-md-8 fv-row fv-plugins-icon-container">
+            {{ form_widget(form_input, { 'attr': {'class': 'form-select form-select-solid bg-opacity-80 bg-secondary ', 'data-control':"select2", 'data-placeholder':"Sélectionner une option"}}) }}
+            <div class="form-text">
+                {{ form_help(form_input) }}
+            </div>
+            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                <div data-field="country" data-validator="notEmpty">{{ form_errors(form_input) }}</div>
+            </div>
+        </div>
+        <!--end::Col-->
+    </div>
+{% endmacro %}
+
+{% macro input_radio(form_input) %}
+    <div class="row mb-6">
+        <!--begin::Label-->
+        <label class="col-md-4 col-form-label fw-semibold fs-6">{{ form_label(form_input) }}</label>
+        <!--end::Label-->
+        <!--begin::Col-->
+        <div id="{{ field_name(form_input) }}" class="col-md-8 mb-10 d-flex">
+            {% for checkboxes in form_input.children %}
+                <div class="form-check form-check-custom form-check-solid me-10">
+                    <input class="form-check-input bg-opacity-80 bg-secondary " type="radio" value="{{ checkboxes.vars.value }}" id="{{ checkboxes.vars.id }}" name="{{ checkboxes.vars.full_name }}"/>
+                    <label class="form-check-label" for="{{ checkboxes.vars.full_name }}">
+                        {{ checkboxes.vars.value }}
+                    </label>
+                </div>
+            {% endfor %}
+            <div class="form-text">
+                {{ form_help(form_input) }}
+            </div>
+            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                <div data-field="country" data-validator="notEmpty">{{ form_errors(form_input) }}</div>
+            </div>
+        </div>
+        <!--end::Col-->
+    </div>
+{% endmacro %}
+{% macro input_textarea(form_input) %}
+    <div class="row mb-6">
+        <!--begin::Label-->
+        <label class="col-md-4 col-form-label fw-semibold fs-6">{{ form_label(form_input) }}</label>
+        <!--end::Label-->
+
+        <!--begin::Col-->
+        <div class="col-md-8 fv-row fv-plugins-icon-container">
+            {{ form_widget(form_input, { 'attr': {'class': 'form-control form-control-lg form-control-solid bg-opacity-80 bg-secondary','rows':5}}) }}
+            <div class="form-text ">
+                {{ form_help(form_input) }}
+            </div>
+            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                <div data-field="country" data-validator="notEmpty">{{ form_errors(form_input) }}</div>
+            </div>
+        </div>
+        <!--end::Col-->
+    </div>
+{% endmacro %}
