@@ -4,36 +4,11 @@
     <!--begin::Main-->
     <div class="d-flex flex-column justify-content-between h-100 hover-scroll-overlay-y my-2 d-flex flex-column" id="kt_app_sidebar_main" data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_header" data-kt-scroll-wrappers="#kt_app_main" data-kt-scroll-offset="5px">
         <!--begin::Sidebar menu-->
-        <div id="#kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false" class="flex-column-fluid menu menu-sub-indention menu-column menu-rounded menu-active-bg mb-7">
-            <!--begin:Menu item-->
-{#            {{ menu.menu_item("Accueil",path("app_default"),"ki-element-11") }}#}
-            <!--end:Menu sub-->
-            {{ menu.menu_item("Elèves",path("app_eleve_index"),"ki-people") }}
-            {{ menu.menu_item("Responsable",path("app_responsable_index"),"ki-calendar-edit") }}
-            {{ menu.menu_item("Classe",path("app_classe_index"),"ki-arrows-circle") }}
-            <!--end:Menu item-->
-            <!--begin:Menu sub-->
-            {{ menu.sub_menu_begin("Echéancier","ki-rescue") }}
-            {% for mois in annee %}
-                {{ menu.sub_menu_item(mois,path("app_echeancier_show",{"mois":mois})) }}
-            {% endfor %}
-            {{ menu.sub_menu_end() }}
-            <!--end:Menu sub-->
-            {{ menu.menu_item("Cantine",path("app_cantine_index"),"ki-tablet-delete") }}
-            {{ menu.menu_item("Bourse",path("app_bourse_index"),"ki-tablet-delete") }}
-            {{ menu.menu_item("Aide etat",path("app_aide_etat_index"),"ki-tablet-delete") }}
-            {{ menu.menu_item("Ardp",path("app_ardp_index"),"ki-tablet-delete") }}
-            {{ menu.menu_item("Frais Divers",path("app_frais_divers_index"),"ki-tablet-delete") }}
-            {{ menu.menu_item("Prélèvement",path("app_prelevement_index"),"ki-tablet-delete") }}
-            {{ menu.menu_item("Remise chèque",path("app_remise_cheque_index"),"ki-tablet-delete") }}
-            {{ menu.menu_item("Remise Espèce",path("app_remise_espece_index"),"ki-tablet-delete") }}
+        <div id="#kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false" class="flex-column-fluid menu menu-sub-indention menu-column menu-rounded menu-active-bg mb-7">*
+            {{ menu.menu_item("Professeur",path("app_professeur"),"ki-profile-user") }}
+            {{ menu.menu_item("Promotion",path("app_promo"),"ki-teacher") }}
+            {{ menu.menu_item("",path("app_promo"),"ki-teacher") }}
 
-            <!--end:Menu item-->
-            {{ menu.sub_menu_begin("Aide (dev)","ki-rescue") }}
-            {{ menu.sub_menu_item("Components","https://preview.keenthemes.com/html/saul-html-pro/docs/base/utilities") }}
-            {{ menu.sub_menu_item("Documentation","https://preview.keenthemes.com/html/saul-html-pro/docs") }}
-            {{ menu.sub_menu_item("Layout Builder","https://preview.keenthemes.com/saul-html-free/layout-builder.html") }}
-            {{ menu.sub_menu_end() }}
         </div>
     </div>
     <!--end::Main-->

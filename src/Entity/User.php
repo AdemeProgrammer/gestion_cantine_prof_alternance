@@ -38,7 +38,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?int $code_compta = null;
 
     public function getId(): ?int
