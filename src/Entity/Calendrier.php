@@ -86,22 +86,32 @@ class Calendrier
         return $this->repas;
     }
 
-    public function addRepa(Repas $repa): static
+    public function addRepas(Repas $repas): static
     {
-        if (!$this->repas->contains($repa)) {
-            $this->repas->add($repa);
-            $repa->setRefCalendrier($this);
+        if (!$this->repas->contains($repas)) {
+            $this->repas->add($repas);
+            $repas->setRefCalendrier($this);
         }
 
         return $this;
     }
-
-    public function removeRepa(Repas $repa): static
+    public function getPromo(): ?Promo
     {
-        if ($this->repas->removeElement($repa)) {
+        return $this->promo;
+    }
+
+    public function setPromo(?Promo $promo): self
+    {
+        $this->promo = $promo;
+        return $this;
+    }
+
+    public function removeRepas(Repas $repas): static
+    {
+        if ($this->repas->removeElement($repas)) {
             // set the owning side to null (unless already changed)
-            if ($repa->getRefCalendrier() === $this) {
-                $repa->setRefCalendrier(null);
+            if ($repas->getRefCalendrier() === $this) {
+                $repas->setRefCalendrier(null);
             }
         }
 
