@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\Calendrier;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Entity\Promo;
+
 
 /**
  * @extends ServiceEntityRepository<Calendrier>
@@ -40,4 +42,16 @@ class CalendrierRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+    public function findByPromoBetween(Promo $promo, \DateTimeInterface $start, \DateTimeInterface $end): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.refPromo = :promo')
+            ->andWhere('c.date BETWEEN :s AND :e')
+            ->setParameter('promo', $promo)
+            ->setParameter('s', $start->format('Y-m-d'))
+            ->setParameter('e', $end->format('Y-m-d'))
+            ->orderBy('c.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

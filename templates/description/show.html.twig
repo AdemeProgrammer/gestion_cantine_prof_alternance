@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Description{% endblock %}
+
+{% block body %}
+    <h1>Description</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ description.id }}</td>
+            </tr>
+            <tr>
+                <th>Lundi</th>
+                <td>{{ description.lundi ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Mardi</th>
+                <td>{{ description.mardi ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Mercredi</th>
+                <td>{{ description.mercredi ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Jeudi</th>
+                <td>{{ description.jeudi ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Vendredi</th>
+                <td>{{ description.vendredi ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Report</th>
+                <td>{{ description.report }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_description_index') }}">back to list</a>
+
+    <a href="{{ path('app_description_edit', {'id': description.id}) }}">edit</a>
+
+    {{ include('description/_delete_form.html.twig') }}
+{% endblock %}

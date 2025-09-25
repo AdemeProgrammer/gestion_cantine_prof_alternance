@@ -1,16 +1,37 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Promo index{% endblock %}
+{% block title %}Liste des promotions{% endblock %}
+
+{# Petit style pour des boutons-chips sobres #}
+{% block stylesheets %}
+    <style>
+        .promo-wrap{display:flex;flex-wrap:wrap;gap:.5rem}
+        .promo-chip{
+            display:inline-flex;align-items:center;gap:.4rem;
+            padding:.35rem .6rem;
+            border:1px solid #1f2937; /* gris foncé discret */
+            background:#fff;border-radius:.375rem; /* ~6px */
+            font-size:.9rem;font-weight:500;line-height:1.1;
+            transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+        }
+        .promo-chip:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.06);border-color:#111827}
+        .promo-chip:focus{outline:none;box-shadow:0 0 0 .2rem rgba(17,24,39,.08)}
+        .promo-new{border-style:dashed}
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Promo index</h1>
-     <button>
-
-
+    <div class="promo-wrap">
         {% for promo in promos %}
-                {{ promo.anneeDebut }}
-                {{ promo.anneeFin }}
+            <button type="button" class="promo-chip">
+                {{ promo.anneeDebut }} {{ promo.anneeFin }}
+            </button>
+        {% else %}
+            <span class="text-muted">Aucune promotion pour le moment.</span>
         {% endfor %}
-        </button>
-    <a href="{{ path('app_promo_new') }}">Create new</a>
+
+        <a href="{{ path('app_promo_new') }}" class="promo-chip promo-new text-decoration-none">
+            + Create new
+        </a>
+    </div>
 {% endblock %}
