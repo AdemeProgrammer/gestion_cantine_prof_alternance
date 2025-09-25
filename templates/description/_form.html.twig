@@ -1,4 +1,32 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{# templates/description/_form.html.twig #}
+{{ form_start(form, {'attr': {'class': 'card shadow-sm p-4 mb-4'}}) }}
+<h2 class="mb-3">Créer une Description</h2>
+
+{# Cases à cocher pour les jours et report : en gros ici, j'ai rajouté report dans la boucle des jours car il ne fonctionnait pas en dehors
+et je n'ai pas réussi à trouver d'autres solutions#}
+{% for day in ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'report'] %}
+    {% if form[day] is defined %}
+        <div class="mb-3">
+            {{ form_label(form[day], day|capitalize, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+            {{ form_widget(form[day], {'attr': {'class': 'form-check-input'}}) }}
+            {{ form_errors(form[day]) }}
+        </div>
+    {% endif %}
+{% endfor %}
+
+{# Professeur est lié avec ref_professeur_id et Promo avec ref_promo_id #}
+<div class="mb-3">
+    {{ form_label(form.refProfesseur) }}
+    {{ form_widget(form.refProfesseur, {'attr': {'class': 'form-select'}}) }}
+    {{ form_errors(form.refProfesseur) }}
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.refPromo) }}
+    {{ form_widget(form.refPromo, {'attr': {'class': 'form-select'}}) }}
+    {{ form_errors(form.refPromo) }}
+</div>
+
+<button type="submit" class="btn btn-primary">Enregistrer</button>
 {{ form_end(form) }}
+
