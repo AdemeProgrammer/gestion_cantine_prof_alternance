@@ -23,9 +23,10 @@
 {% block body %}
     <div class="promo-wrap">
         {% for promo in promos %}
-            <button type="button" class="promo-chip">
-                {{ promo.anneeDebut }} {{ promo.anneeFin }}
-            </button>
+            <a href="{{ path('cal_summary', { id: promo.id }) }}"
+               class="promo-chip text-decoration-none" role="button">
+                {{ promo.anneeDebut }} - {{ promo.anneeFin }}
+            </a>
         {% else %}
             <span class="text-muted">Aucune promotion pour le moment.</span>
         {% endfor %}

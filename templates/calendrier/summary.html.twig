@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+{% block title %}Calendrier {{ promo.anneeDebut }}–{{ promo.anneeFin }}{% endblock %}
+
+{% block body %}
+    <div class="container my-4">
+        <h2 class="mb-3">Calendrier {{ promo.anneeDebut }}–{{ promo.anneeFin }}</h2>
+
+        <div class="mb-2 small">
+            <span class="badge bg-secondary">Semaine</span>
+            <span class="badge bg-warning text-dark">Weekend</span>
+            <span class="badge bg-danger">Férié</span>
+            <span class="badge bg-info text-dark">Vacances</span>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+            {% for ym, data in months %}
+                {% set parts = ym|split('-') %}
+                {% set y = parts[0] %}
+                {% set m = parts[1] %}
+                <div class="col">
+                    <a class="text-decoration-none" href="{{ path('cal_month', {id: promo.id, year: y, month: m}) }}">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title mb-1">{{ data.label|capitalize }}</h5>
+                                <div class="text-muted small">{{ data.total }} jours</div>
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    <span class="badge bg-secondary">S: {{ data['Semaine'] }}</span>
+                                    <span class="badge bg-warning text-dark">W: {{ data['Weekend'] }}</span>
+                                    <span class="badge bg-danger">F: {{ data['Férié'] }}</span>
+                                    <span class="badge bg-info text-dark">V: {{ data['Vacances'] }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ (year ~ '-' ~ '%02d'|format(month) ~ '-01') | date('F Y') }} — Calendrier{% endblock %}
+
+{% block body %}
+    <div class="container my-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <h3 class="mb-3">{{ (year ~ '-' ~ '%02d'|format(month) ~ '-01') | date('F Y') }}</h3>
+            <a class="btn btn-outline-secondary" href="{{ path('cal_summary', {id: promo.id}) }}">← Résumé</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                <tr class="text-center">
+                    <th>Lun</th><th>Mar</th><th>Mer</th><th>Jeu</th><th>Ven</th><th>Sam</th><th>Dim</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for week in weeks %}
+                    <tr>
+                        {% for d in week %}
+                            {% set item = d.item %}
+                            {% set t = item ? item.typeJour.value : '' %}
+                            {% set cls = '' %}
+                            {% if t == 'Semaine' %}{% set cls = 'bg-body' %}
+                            {% elseif t == 'Weekend' %}{% set cls = 'bg-warning-subtle' %}
+                            {% elseif t == 'Férié' %}{% set cls = 'bg-danger-subtle' %}
+                            {% elseif t == 'Vacances' %}{% set cls = 'bg-info-subtle' %}{% endif %}
+
+                            <td class="{{ cls }} {{ not d.inMonth ? 'opacity-50' : '' }}" style="min-width:140px; height:120px;">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ d.date|date('j') }}</strong>
+                                    {% if item %}
+                                        <span class="badge bg-secondary">{{ item.typeJour.value }}</span>
+                                    {% endif %}
+                                </div>
+
+                                {% if item %}
+                                    {# Affiche un aperçu si tu as menuProfs/commentaire #}
+                                    {% if item.menuProfs is defined and item.menuProfs %}
+                                        <div class="small mt-2 text-truncate" title="{{ item.menuProfs }}">{{ item.menuProfs }}</div>
+                                    {% elseif item.commentaire is defined and item.commentaire %}
+                                        <div class="small mt-2 text-truncate" title="{{ item.commentaire }}">{{ item.commentaire }}</div>
+                                    {% endif %}
+
+                                    {% if d.inMonth %}
+                                        <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#edit{{ item.id }}">
+                                            Éditer repas
+                                        </button>
+
+                                        <!-- Modal -->
+                                        <div class="modal fade" id="edit{{ item.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <form method="post" action="{{ path('cal_save_meal', {id: promo.id}) }}">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Repas profs — {{ item.date|date('d/m/Y') }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <input type="hidden" name="cal_id" value="{{ item.id }}">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Menu</label>
+                                                                <textarea name="menu" class="form-control" rows="4">
+{% if item.menuProfs is defined and item.menuProfs %}{{ item.menuProfs }}{% elseif item.commentaire is defined %}{{ item.commentaire }}{% endif %}
+                            </textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                            <button class="btn btn-primary">Enregistrer</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
