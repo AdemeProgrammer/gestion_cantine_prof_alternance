@@ -3,12 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\Description;
+use App\Entity\Promo;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Description>
- */
 class DescriptionRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +14,19 @@ class DescriptionRepository extends ServiceEntityRepository
         parent::__construct($registry, Description::class);
     }
 
-    //    /**
-    //     * @return Description[] Returns an array of Description objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('d')
-    //            ->andWhere('d.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('d.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Description
-    //    {
-    //        return $this->createQueryBuilder('d')
-    //            ->andWhere('d.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /** Descriptions de la promo avec profs ACTIFS (Professeur.est_actif = true) */
+    public function findByPromoWithActiveProfs(Promo $promo): array
+    {
+        return $this->createQueryBuilder('d')
+            ->addSelect('p')
+            ->join('d.refProfesseur', 'p')
+            ->andWhere('d.refPromo = :promo')
+            ->andWhere('p.est_actif = :actif')
+            ->setParameter('promo', $promo)
+            ->setParameter('actif', true)
+            ->orderBy('p.nom', 'ASC')
+            ->addOrderBy('p.prenom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
