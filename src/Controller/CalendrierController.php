@@ -32,7 +32,7 @@ final class CalendrierController extends AbstractController
 
         $months = [];
         for ($m = 9; $m <= 12; $m++) $months[] = ['y' => $startYear, 'm' => $m];
-        for ($m = 1; $m <= 8;  $m++) $months[] = ['y' => $endYear,   'm' => $m];
+        for ($m = 1; $m <= 7;  $m++) $months[] = ['y' => $endYear,   'm' => $m];
 
         $cards = [];
         foreach ($months as $mm) {

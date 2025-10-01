@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Facturation{% endblock %}
+
+{% block body %}
+    <h1>Facturation</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ facturation.id }}</td>
+            </tr>
+            <tr>
+                <th>Mois</th>
+                <td>{{ facturation.mois }}</td>
+            </tr>
+            <tr>
+                <th>Montant_total</th>
+                <td>{{ facturation.montantTotal }}</td>
+            </tr>
+            <tr>
+                <th>Montant_regle</th>
+                <td>{{ facturation.montantRegle }}</td>
+            </tr>
+            <tr>
+                <th>Montant_restant</th>
+                <td>{{ facturation.montantRestant }}</td>
+            </tr>
+            <tr>
+                <th>Statut</th>
+                <td>{{ facturation.statut }}</td>
+            </tr>
+            <tr>
+                <th>Nb_repas</th>
+                <td>{{ facturation.nbRepas }}</td>
+            </tr>
+            <tr>
+                <th>Report_m_1</th>
+                <td>{{ facturation.reportM1 }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_facturation_index') }}">back to list</a>
+
+    <a href="{{ path('app_facturation_edit', {'id': facturation.id}) }}">edit</a>
+
+    {{ include('facturation/_delete_form.html.twig') }}
+{% endblock %}

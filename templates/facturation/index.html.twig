@@ -1,20 +1,47 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello FacturationController!{% endblock %}
+{% block title %}Facturation index{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <h1>Facturation index</h1>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Mois</th>
+                <th>Montant_total</th>
+                <th>Montant_regle</th>
+                <th>Montant_restant</th>
+                <th>Statut</th>
+                <th>Nb_repas</th>
+                <th>Report_m_1</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for facturation in facturations %}
+            <tr>
+                <td>{{ facturation.id }}</td>
+                <td>{{ facturation.mois }}</td>
+                <td>{{ facturation.montantTotal }}</td>
+                <td>{{ facturation.montantRegle }}</td>
+                <td>{{ facturation.montantRestant }}</td>
+                <td>{{ facturation.statut }}</td>
+                <td>{{ facturation.nbRepas }}</td>
+                <td>{{ facturation.reportM1 }}</td>
+                <td>
+                    <a href="{{ path('app_facturation_show', {'id': facturation.id}) }}">show</a>
+                    <a href="{{ path('app_facturation_edit', {'id': facturation.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="9">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/wamp64/www/SYMFONY/gestion_cantine_prof_alternance/src/Controller/FacturationController.php</code></li>
-        <li>Your template at <code>C:/wamp64/www/SYMFONY/gestion_cantine_prof_alternance/templates/facturation/index.html.twig</code></li>
-    </ul>
-</div>
+    <a href="{{ path('app_facturation_new') }}">Create new</a>
 {% endblock %}
