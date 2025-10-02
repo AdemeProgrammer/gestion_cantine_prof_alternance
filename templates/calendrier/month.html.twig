@@ -19,56 +19,58 @@
                 <thead class="table-light">
                 <tr>
                     <th class="text-nowrap">Professeur</th>
-                    {% for i, d in businessDays %}
-                        <th class="text-center text-nowrap">{{ weekdayNames[i]|slice(0,2)|capitalize }}<br>{{ d|date('d/m') }}</th>
+                    {# En-tête basé UNIQUEMENT sur la BDD calendrier #}
+                    {% for col in columns %}
+                        {# col.dowLabel ex: "jeu." -> on prend 2 lettres #}
+                        {% set dlabel = col.dowLabel|replace({'.':''})|slice(0,2)|capitalize %}
+                        <th class="text-center text-nowrap">
+                            {{ dlabel }}<br>{{ col.date|date('d/m', 'Europe/Paris') }}
+                        </th>
                     {% endfor %}
                 </tr>
                 </thead>
                 <tbody>
 
-                {# Ligne des types (couleurs) #}
+                {# Bandeau : type de jour depuis la BDD 'calendrier' #}
                 <tr>
                     <td class="fw-normal text-muted">Type (BDD)</td>
-                    {% for key in ymdKeys %}
-                        {% set t = (typesMap[key] ?? '')|lower %}
+                    {% for col in columns %}
+                        {% set t = (typesMap[col.ymd] ?? '')|lower|trim %}
                         {% set cls =
                             t in ['ferie','férié','ferié','ferme','fermé'] ? 'bg-danger' :
                             (t in ['vacances'] ? 'bg-warning text-dark' :
-                            (t in ['ouvre','ouvré','ouvré','ouvrée'] ? 'bg-success' : 'bg-secondary'))
+                            (t in ['semaine','cours'] ? 'bg-secondary' : 'bg-light text-muted'))
                         %}
                         <td class="text-center">
-                            {% if t %}<span class="badge {{ cls }}">{{ t }}</span>{% else %}<span class="text-muted">–</span>{% endif %}
+                            {% if t %}
+                                <span class="badge {{ cls }}">{{ t }}</span>
+                            {% else %}
+                                <span class="text-muted">–</span>
+                            {% endif %}
                         </td>
                     {% endfor %}
                 </tr>
 
-                {# Matrice : styles déduits au front (sans champ “prévu”) #}
+                {# Matrice : checked <=> une ligne `repas` existe (final == 1) #}
                 {% for row in rows %}
                     <tr>
                         <td class="text-nowrap">{{ row.prof.prenom }} {{ row.prof.nom }}</td>
+
                         {% for j, cell in row.cells %}
-                            {% set calId = calIds[j] ?? null %}
-                            {# prévu (expected=1) => fond clair ; exceptionnel (expected=0 & override) => bordure bleue ; retiré (expected=1 & override=0) => bordure rouge #}
-                            {% set baseCls = cell.expected == 1 ? 'bg-light' : 'bg-white' %}
-                            {% set borderCls =
-                                (cell.expected == 0 and cell.hasOverride and cell.final == 1) ? 'border border-info' :
-                                (cell.expected == 1 and cell.hasOverride and cell.final == 0) ? 'border border-danger' : '' %}
-                            <td class="text-center {{ baseCls }} {{ borderCls }}">
-                                {% if calId %}
-                                    <input type="checkbox"
-                                           class="form-check-input meal-toggle"
-                                           data-cal-id="{{ calId }}"
-                                           data-prof-id="{{ row.profId }}"
-                                           {% if cell.final == 1 %}checked{% endif %} />
-                                {% else %}
-                                    <span class="text-muted">—</span>
-                                {% endif %}
+                            {% set col = columns[j] %}
+                            {% set checked = (cell.final == 1) %}
+                            <td class="text-center {{ checked ? 'bg-light' : 'bg-white' }}">
+                                <input type="checkbox"
+                                       class="form-check-input meal-toggle"
+                                       data-cal-id="{{ col.calId }}"
+                                       data-prof-id="{{ row.profId }}"
+                                       {% if checked %}checked{% endif %} />
                             </td>
                         {% endfor %}
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="{{ businessDays|length + 1 }}" class="text-center text-muted py-4">
+                        <td colspan="{{ columns|length + 1 }}" class="text-center text-muted py-4">
                             Aucun professeur actif lié à cette promo.
                         </td>
                     </tr>
@@ -78,9 +80,7 @@
         </div>
 
         <div class="small text-muted mt-2">
-            <span class="badge bg-light text-dark border"> </span> Prévu (Description)
-            &nbsp;|&nbsp; <span class="badge border border-info"> </span> Ajout exceptionnel
-            &nbsp;|&nbsp; <span class="badge border border-danger"> </span> Retiré
+            <span class="badge bg-light text-dark border"> </span> Repas présent en BDD
         </div>
 
         <div class="mt-3 d-flex gap-3">
@@ -97,6 +97,7 @@
             document.querySelectorAll('.meal-toggle').forEach(cb => {
                 cb.addEventListener('change', async (e) => {
                     const box = e.currentTarget;
+
                     const payload = {
                         calId: parseInt(box.dataset.calId, 10),
                         profId: parseInt(box.dataset.profId, 10),
@@ -112,11 +113,11 @@
                         });
                         const data = await res.json();
                         if (!res.ok || !data.ok) {
-                            box.checked = !box.checked;
+                            box.checked = !box.checked; // rollback
                             alert('Enregistrement impossible' + (data.error ? ' (' + data.error + ')' : ''));
                         }
                     } catch (err) {
-                        box.checked = !box.checked;
+                        box.checked = !box.checked; // rollback
                         alert('Erreur réseau, réessaie.');
                     }
                 });

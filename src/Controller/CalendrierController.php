@@ -9,8 +9,6 @@ use App\Repository\DescriptionRepository;
 use App\Repository\ProfesseurRepository;
 use App\Repository\RepasRepository;
 use App\Service\CalendarService;
-use DateInterval;
-use DatePeriod;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -53,12 +51,16 @@ final class CalendrierController extends AbstractController
         ]);
     }
 
-    /** MONTH = détail avec cases cochables (final = override ?? expected) */
+    /**
+     * MONTH = tableau cliquable
+     * RÈGLE D’AFFICHAGE : CASE COCHÉE ⇢ il existe une ligne `repas` (on ignore totalement `description`)
+     * On construit les colonnes à partir de la BDD `calendrier` (donc plus de décalage de jours).
+     */
     #[Route('/month/{id}', name: 'month', methods: ['GET'])]
     public function month(
         Promo $promo,
         Request $request,
-        CalendarService $cal,
+        CalendarService $calService,
         CalendrierRepository $calRepo,
         DescriptionRepository $descRepo,
         RepasRepository $repasRepo
@@ -70,57 +72,85 @@ final class CalendrierController extends AbstractController
         $firstOfMonth = new DateTimeImmutable(sprintf('%04d-%02d-01 00:00:00', $year, $month), new \DateTimeZone('Europe/Paris'));
         $lastOfMonth  = $firstOfMonth->modify('last day of this month')->setTime(23, 59, 59);
 
-        // jours ouvrés
-        $period = new DatePeriod($firstOfMonth, new DateInterval('P1D'), $lastOfMonth->modify('+1 day'));
-        $businessDays = array_values(array_filter(iterator_to_array($period), fn(DateTimeInterface $d) => (int)$d->format('N') <= 5));
-        $ymdKeys = array_map(fn(DateTimeInterface $d) => $d->format('Y-m-d'), $businessDays);
-
-        // types pour la ligne de tête
-        $typesMap = $cal->getMonthTypes($year, $month, $promo->getId());
-
-        // date -> id calendrier
+        // 1) Colonnes construites DEPUIS LA BDD calendrier (filtrées Mon-Fri)
+        //    -> aucune recomposition côté PHP => zéro décalage
         $calRows = $calRepo->getMonthCalendars($firstOfMonth, $lastOfMonth, $promo->getId());
-        $dateToCalId = [];
-        $calIdsOrdered = [];
-        foreach ($calRows as $r) { $dateToCalId[$r['d']->format('Y-m-d')] = (int) $r['id']; }
-        foreach ($ymdKeys as $k) { $calIdsOrdered[] = $dateToCalId[$k] ?? null; }
+        $columns = [];           // liste ordonnée de colonnes [{ymd, calId, date, dowLabel}]
+        $ymdKeys = [];           // ymd par colonne
+        $calIds  = [];           // id calendrier par colonne
+        $dateToCalId = [];       // ymd -> calId
 
-        // descriptions (profs actifs)
+        foreach ($calRows as $r) {
+            /** @var DateTimeInterface $d */
+            $d = $r['d'];
+            if ((int)$d->format('N') > 5) {
+                continue; // on garde uniquement lundi..vendredi
+            }
+            $ymd = $d->format('Y-m-d');
+            $dateToCalId[$ymd] = (int) $r['id'];
+            $columns[] = [
+                'ymd'      => $ymd,
+                'calId'    => (int) $r['id'],
+                'date'     => $d,
+                'dowLabel' => strtolower(\IntlDateFormatter::formatObject($d, 'EEE', 'fr_FR')), // ex: jeu., ven.
+            ];
+        }
+        // Normalise l’ordre (au cas où le repo ne soit pas déjà trié)
+        usort($columns, static fn($a, $b) => strcmp($a['ymd'], $b['ymd']));
+        foreach ($columns as $col) {
+            $ymdKeys[] = $col['ymd'];
+            $calIds[]  = $col['calId'];
+        }
+
+        // 2) Types (ligne d’en-tête) depuis le service
+        $typesMap = $calService->getMonthTypes($year, $month, $promo->getId());
+
+        // 3) Profs affichés = profs ayant description active dans la promo (structure existante)
         $descs   = $descRepo->findByPromoWithActiveProfs($promo);
         $profIds = array_map(fn($d) => $d->getRefProfesseur()->getId(), $descs);
 
-        // overrides (repas en BDD) — créés par tes triggers
-        $repasRows = $repasRepo->findByCalendarsAndProfs(array_values(array_filter($calIdsOrdered)), $profIds);
-        $override = []; // [$profId][$ymd] = 1/0
+        // 4) Repas existants pour ces colonnes+profs (vérité d’affichage)
+        $repasRows = [];
+        if ($calIds && $profIds) {
+            $repasRows = $repasRepo->findByCalendarsAndProfs($calIds, $profIds);
+        }
+
+        // 5) presence[profId][ymd] = true si une ligne repas existe (on NE regarde PAS est_consomme)
+        $presence = [];
         foreach ($repasRows as $row) {
-            $ymd = array_search((int)$row['calId'], $dateToCalId, true);
-            if ($ymd !== false) {
-                $override[(int)$row['profId']][$ymd] = $row['consomme'] ? 1 : 0;
+            $calId = (int) $row['calId'];
+            $profId = (int) $row['profId'];
+            // retrouves le ymd directement via $columns
+            // (on peut garder une table calId->ymd pour éviter array_search)
+            // construisons-la une fois :
+        }
+        $calIdToYmd = array_column($columns, 'ymd', 'calId'); // calId => ymd
+        foreach ($repasRows as $row) {
+            $profId = (int) $row['profId'];
+            $ymd = $calIdToYmd[(int)$row['calId']] ?? null;
+            if ($ymd) {
+                $presence[$profId][$ymd] = true;
             }
         }
 
-        // matrice
+        // 6) Matrice rows/cells : final = 1 ssi repas existe (ignore totalement "expected")
         $rows = [];
         foreach ($descs as $desc) {
             $p   = $desc->getRefProfesseur();
             $pid = $p->getId();
-            $weekFlags = [
-                1 => (bool) $desc->isLundi(),
-                2 => (bool) $desc->isMardi(),
-                3 => (bool) $desc->isMercredi(),
-                4 => (bool) $desc->isJeudi(),
-                5 => (bool) $desc->isVendredi(),
-            ];
+
             $cells = [];
-            foreach ($businessDays as $d) {
-                $n   = (int) $d->format('N');
-                $ymd = $d->format('Y-m-d');
-                $expected    = !empty($weekFlags[$n]) ? 1 : 0;
-                $hasOverride = isset($override[$pid][$ymd]);
-                $final       = $hasOverride ? $override[$pid][$ymd] : $expected;
-                $cells[] = ['final'=>$final, 'expected'=>$expected, 'hasOverride'=>$hasOverride, 'ymd'=>$ymd];
+            foreach ($columns as $col) {
+                $ymd = $col['ymd'];
+                $has = !empty($presence[$pid][$ymd]);
+                $cells[] = [
+                    'final'       => $has ? 1 : 0,
+                    'hasOverride' => $has,
+                    'ymd'         => $ymd,
+                ];
             }
-            $rows[] = ['prof'=>$p, 'profId'=>$pid, 'cells'=>$cells];
+
+            $rows[] = ['prof' => $p, 'profId' => $pid, 'cells' => $cells];
         }
 
         $prev = $firstOfMonth->modify('-1 month');
@@ -131,19 +161,24 @@ final class CalendrierController extends AbstractController
             'year'          => $year,
             'month'         => $month,
             'firstOfMonth'  => $firstOfMonth,
-            'businessDays'  => $businessDays,
-            'weekdayNames'  => array_map(fn($d) => $cal->getWeekdayName($d), $businessDays),
+
+            // colonnes basées sur la BDD (plus fiables)
+            'columns'       => $columns, // [{ymd, calId, date, dowLabel}]
             'ymdKeys'       => $ymdKeys,
             'typesMap'      => $typesMap,
             'rows'          => $rows,
-            'calIds'        => $calIdsOrdered,
+            'calIds'        => $calIds,
+
             'prev'          => ['y'=>(int)$prev->format('Y'),'m'=>(int)$prev->format('n')],
             'next'          => ['y'=>(int)$next->format('Y'),'m'=>(int)$next->format('n')],
             'csrf'          => $this->container->get('security.csrf.token_manager')->getToken('cal_meal')->getValue(),
         ]);
     }
 
-    /** upsert AJAX d’une case */
+    /**
+     * upsert AJAX d’une case
+     * Cocher = créer la ligne `repas` si absente ; Décocher = supprimer la ligne.
+     */
     #[Route('/save', name: 'save', methods: ['POST'])]
     public function save(
         Request $request,
@@ -165,14 +200,21 @@ final class CalendrierController extends AbstractController
         $value = (bool)($data['value'] ?? false);
 
         $repas = $repasRepo->findOneByCalAndProf($cal, $prof);
-        if (!$repas) {
-            $repas = (new Repas())
-                ->setRefCalendrier($cal)
-                ->setProfesseur($prof);
-        }
-        $repas->setEstConsomme($value);
 
-        $em->persist($repas);
+        if ($value) {
+            if (!$repas) {
+                $repas = (new Repas())
+                    ->setRefCalendrier($cal)
+                    ->setProfesseur($prof)
+                    ->setEstConsomme(false);
+                $em->persist($repas);
+            }
+        } else {
+            if ($repas) {
+                $em->remove($repas);
+            }
+        }
+
         $em->flush();
 
         return $this->json(['ok' => true]);

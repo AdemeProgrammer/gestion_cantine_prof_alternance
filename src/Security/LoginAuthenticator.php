@@ -2,6 +2,7 @@
 
 namespace App\Security;
 
+use App\Repository\PromoRepository;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,14 +23,14 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
 
     public const LOGIN_ROUTE = 'app_login';
 
-    public function __construct(private UrlGeneratorInterface $urlGenerator)
-    {
-    }
+    public function __construct(
+        private UrlGeneratorInterface $urlGenerator,
+        private PromoRepository $promoRepo
+    ) {}
 
     public function authenticate(Request $request): Passport
     {
         $email = $request->getPayload()->getString('email');
-
         $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
 
         return new Passport(
@@ -44,17 +45,46 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
+        // 1) Si une page protégée avait été demandée avant login, on y retourne
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
-            return new RedirectResponse($targetPath);
+            if ($this->isSafeInternalPath($targetPath)) {
+                // Cas particulier: /cal/month/{id} -> vérifier que la promo existe encore
+                $path = parse_url($targetPath, PHP_URL_PATH) ?? '';
+                if (preg_match('#^/cal/month/(\d+)\b#', $path, $m)) {
+                    $promoId = (int) $m[1];
+                    if (!$this->promoRepo->find($promoId)) {
+                        // Promo absente (ex: reset BDD) => on ignore ce target path
+                        return new RedirectResponse($this->urlGenerator->generate('app_promo_index'));
+                    }
+                }
+                return new RedirectResponse($targetPath);
+            }
         }
 
-        // For example:
+        // 2) Paramètre ?next=/chemin (ou champ hidden "next")
+        $next = $request->query->get('next', '');
+        if ($next === '') {
+            $next = $request->getPayload()->getString('next', '');
+        }
+        if (is_string($next) && $this->isSafeInternalPath($next)) {
+            return new RedirectResponse($next);
+        }
+
+        // 3) Fallback final: index des promos
         return new RedirectResponse($this->urlGenerator->generate('app_promo_index'));
-        throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
     }
 
     protected function getLoginUrl(Request $request): string
     {
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
+    }
+
+    private function isSafeInternalPath(?string $url): bool
+    {
+        if (!$url) return false;
+        // pas d'URL absolue externe
+        if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) return false;
+        // doit commencer par un chemin interne
+        return str_starts_with($url, '/');
     }
 }
