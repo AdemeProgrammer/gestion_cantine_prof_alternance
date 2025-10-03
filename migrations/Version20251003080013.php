@@ -8,13 +8,21 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Auto-generated Migration: Please modify to your needs!
+ * Auto-generated Migration + trigger description→repas (jours ouverts).
  */
-final class Version20251002110903 extends AbstractMigration
+final class Version20251003080013 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Schéma + trigger: à l’INSERT de description, créer les repas sur jours ouvrés (SEMAINE/COURS).';
+    }
+
+    /**
+     * Important pour MySQL/MariaDB: CREATE TRIGGER peut ne pas être transactionnel.
+     */
+    public function isTransactional(): bool
+    {
+        return false;
     }
 
     public function up(Schema $schema): void
@@ -36,10 +44,44 @@ final class Version20251002110903 extends AbstractMigration
         $this->addSql('ALTER TABLE paiement ADD CONSTRAINT FK_B1DC7A1E9EE27989 FOREIGN KEY (ref_professeur_id) REFERENCES professeur (id)');
         $this->addSql('ALTER TABLE repas ADD CONSTRAINT FK_A8D351B3DB02AB31 FOREIGN KEY (ref_calendrier_id) REFERENCES calendrier (id)');
         $this->addSql('ALTER TABLE repas ADD CONSTRAINT FK_A8D351B3BAB22EE9 FOREIGN KEY (professeur_id) REFERENCES professeur (id)');
+
+        // --- TRIGGER: description -> repas (jours ouverts: SEMAINE/COURS) ---
+        $this->addSql('DROP TRIGGER IF EXISTS trg_repas_on_description_insert');
+
+        // Single-statement (pas de DELIMITER/BEGIN...END)
+        $this->addSql(<<<'SQL'
+CREATE TRIGGER trg_repas_on_description_insert
+AFTER INSERT ON description
+FOR EACH ROW
+INSERT INTO repas (ref_calendrier_id, professeur_id, est_consomme)
+SELECT
+    c.id,
+    NEW.ref_professeur_id,
+    0
+FROM calendrier c
+WHERE c.ref_promo_id = NEW.ref_promo_id
+  AND TRIM(UPPER(c.type_jour)) IN ('SEMAINE','COURS')
+  AND (
+        (DAYOFWEEK(c.`date`)=2 AND NEW.lundi=1) OR
+        (DAYOFWEEK(c.`date`)=3 AND NEW.mardi=1) OR
+        (DAYOFWEEK(c.`date`)=4 AND NEW.mercredi=1) OR
+        (DAYOFWEEK(c.`date`)=5 AND NEW.jeudi=1) OR
+        (DAYOFWEEK(c.`date`)=6 AND NEW.vendredi=1)
+      )
+  AND NOT EXISTS (
+        SELECT 1
+        FROM repas r
+        WHERE r.ref_calendrier_id = c.id
+          AND r.professeur_id     = NEW.ref_professeur_id
+  )
+SQL);
     }
 
     public function down(Schema $schema): void
     {
+        // --- DROP TRIGGER si présent ---
+        $this->addSql('DROP TRIGGER IF EXISTS trg_repas_on_description_insert');
+
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE calendrier DROP FOREIGN KEY FK_B2753CB956D7BC78');
         $this->addSql('ALTER TABLE description DROP FOREIGN KEY FK_6DE440269EE27989');
