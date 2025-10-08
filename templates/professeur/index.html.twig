@@ -1,20 +1,21 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Professeur index{% endblock %}
+{% block title %}Index des professeurs{% endblock %}
 
 {% block body %}
-    <h1>Professeur index</h1>
+    <h1>Index des professeurs</h1>
 
     <table class="table">
         <thead>
-            <tr>
-                <th>Id</th>
-                <th>Prenom</th>
-                <th>Nom</th>
-                <th>Email</th>
-                <th>Est_actif</th>
-                <th>actions</th>
-            </tr>
+        <tr>
+            <th>Id</th>
+            <th>Prénom</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Code compta</th>
+            <th>Actif</th>
+            <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
         {% for professeur in professeurs %}
@@ -23,19 +24,20 @@
                 <td>{{ professeur.prenom }}</td>
                 <td>{{ professeur.nom }}</td>
                 <td>{{ professeur.email }}</td>
-                <td>{{ professeur.estActif ? 'Yes' : 'No' }}</td>
+                <td>{{ professeur.codeCompta ?? '—' }}</td>
+                <td>{{ professeur.estActif ? 'Oui' : 'Non' }}</td>
                 <td>
-                    <a href="{{ path('app_professeur_show', {'id': professeur.id}) }}">show</a>
-                    <a href="{{ path('app_professeur_edit', {'id': professeur.id}) }}">edit</a>
+                    <a href="{{ path('app_professeur_show', {'id': professeur.id}) }}">Afficher</a>
+                    <a href="{{ path('app_professeur_edit', {'id': professeur.id}) }}">Modifier</a>
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="6">no records found</td>
+                <td colspan="7">Aucun enregistrement trouvé</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
 
-    <a href="{{ path('app_professeur_new') }}">Create new</a>
+    <a href="{{ path('app_professeur_new') }}">Créer un nouveau professeur</a>
 {% endblock %}

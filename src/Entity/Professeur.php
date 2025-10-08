@@ -24,6 +24,9 @@ class Professeur
     #[ORM\Column(length: 255, unique: true)]
     private ?string $email = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $code_compta = null;
+
     #[ORM\Column]
     private ?bool $est_actif = null;
 
@@ -100,6 +103,18 @@ class Professeur
         return $this;
     }
 
+    public function getCodeCompta(): ?int
+    {
+        return $this->code_compta;
+    }
+
+    public function setCodeCompta(?int $code_compta): static
+    {
+        $this->code_compta = $code_compta;
+
+        return $this;
+    }
+
     public function isEstActif(): ?bool
     {
         return $this->est_actif;
@@ -133,7 +148,6 @@ class Professeur
     public function removeFacturation(Facturation $facturation): static
     {
         if ($this->facturations->removeElement($facturation)) {
-            // set the owning side to null (unless already changed)
             if ($facturation->getRefProfesseur() === $this) {
                 $facturation->setRefProfesseur(null);
             }
@@ -163,7 +177,6 @@ class Professeur
     public function removePaiement(Paiement $paiement): static
     {
         if ($this->paiements->removeElement($paiement)) {
-            // set the owning side to null (unless already changed)
             if ($paiement->getRefProfesseur() === $this) {
                 $paiement->setRefProfesseur(null);
             }
@@ -193,7 +206,6 @@ class Professeur
     public function removeDescription(Description $description): static
     {
         if ($this->descriptions->removeElement($description)) {
-            // set the owning side to null (unless already changed)
             if ($description->getRefProfesseur() === $this) {
                 $description->setRefProfesseur(null);
             }
@@ -223,7 +235,6 @@ class Professeur
     public function removeRepa(Repas $repa): static
     {
         if ($this->repas->removeElement($repa)) {
-            // set the owning side to null (unless already changed)
             if ($repa->getProfesseur() === $this) {
                 $repa->setProfesseur(null);
             }
@@ -231,8 +242,10 @@ class Professeur
 
         return $this;
     }
+
     public function __toString(): string
     {
         return $this->prenom . ' ' . $this->nom;
     }
 }
+
