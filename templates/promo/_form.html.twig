@@ -1,20 +1,42 @@
 {# templates/promo/_form.html.twig #}
 {{ form_start(form, {'attr': {'class': 'card shadow-sm p-4 mb-4'}}) }}
-<h2 class="mb-3">Créer une Promotion (on dit bonjour)</h2>
+<h2 class="mb-3">Créer une Promotion</h2>
+
+{# erreurs globales (ex: UniqueEntity) #}
+{% if form_errors(form) %}
+    <div class="alert alert-danger" role="alert">
+        {{ form_errors(form) }}
+    </div>
+{% endif %}
+
+{# bannière d’info dynamique Y–Y+1 #}
+<p id="promo_info" class="text-muted mb-3"></p>
 
 <div class="mb-3">
-    {{ form_label(form.annee_debut, 'Année de début', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+    {{ form_label(form.annee_debut, 'Année de début', {'label_attr': {'class': 'form-label'}}) }}
     {{ form_widget(form.annee_debut, {'attr': {'class': 'form-control'}}) }}
     {{ form_errors(form.annee_debut) }}
-</div>
-
-<div class="mb-3">
-    {{ form_label(form.annee_fin, 'Année de fin', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-    {{ form_widget(form.annee_fin, {'attr': {'class': 'form-control'}}) }}
-    {{ form_errors(form.annee_fin) }}
 </div>
 
 <button class="btn btn-success">
     {{ button_label|default('Enregistrer') }}
 </button>
 {{ form_end(form) }}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const debut  = document.getElementById('promo_annee_debut');
+        const info   = document.getElementById('promo_info');
+
+        function render() {
+            const y = parseInt(debut?.value || '', 10);
+            info.textContent = Number.isInteger(y) ? `La promotion sera ${y}-${y+1}.` : '';
+        }
+
+        if (debut && info) {
+            debut.addEventListener('input', render);
+            // init à l’ouverture (utile en édition)
+            render();
+        }
+    });
+</script>
