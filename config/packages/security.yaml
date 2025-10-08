@@ -29,6 +29,7 @@ security:
 
     access_control:
         # login/logout accessibles sans connexion
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/logout, roles: PUBLIC_ACCESS }
 
