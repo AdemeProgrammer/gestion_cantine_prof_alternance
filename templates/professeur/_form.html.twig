@@ -20,8 +20,15 @@
     {{ form_errors(form.email) }}
 </div>
 
+<div class="mb-3">
+    {{ form_label(form.code_compta, 'Code Compta', {'label_attr': {'class': 'form-label'}}) }}
+    {{ form_widget(form.code_compta, {'attr': {'class': 'form-control'}}) }}
+    {{ form_errors(form.code_compta) }}
+</div>
+
 <button class="btn btn-primary">
     {{ button_label|default('Enregistrer') }}
 </button>
 {{ form_end(form) }}
+
 
