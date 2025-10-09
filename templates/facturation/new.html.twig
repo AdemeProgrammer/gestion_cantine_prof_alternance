@@ -1,11 +1,14 @@
+{# templates/facturation/new.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}New Facturation{% endblock %}
+{% block title %}Nouvelle facturation{% endblock %}
 
 {% block body %}
-    <h1>Create new Facturation</h1>
+    <div class="container mt-4">
+        <h1>Créer une nouvelle facturation</h1>
 
-    {{ include('facturation/_form.html.twig') }}
+        {% include 'facturation/_form.html.twig' with {'form': form, 'button_label': 'Créer'} %}
 
-    <a href="{{ path('app_facturation_index') }}">back to list</a>
+        <a href="{{ path('app_facturation_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
+    </div>
 {% endblock %}

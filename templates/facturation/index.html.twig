@@ -1,47 +1,52 @@
+{# templates/facturation/index.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Facturation index{% endblock %}
+{% block title %}Liste des facturations{% endblock %}
 
 {% block body %}
-    <h1>Facturation index</h1>
+    <div class="container mt-4">
+        <h1>Liste des facturations</h1>
 
-    <table class="table">
-        <thead>
+        <a href="{{ path('app_facturation_new') }}" class="btn btn-success mb-3">+ Nouvelle facturation</a>
+
+        <table class="table table-striped table-bordered align-middle">
+            <thead class="table-light">
             <tr>
-                <th>Id</th>
+                <th>ID</th>
                 <th>Mois</th>
-                <th>Montant_total</th>
-                <th>Montant_regle</th>
-                <th>Montant_restant</th>
+                <th>Professeur</th>
+                <th>Nb repas</th>
+                <th>Total (€)</th>
+                <th>Réglé (€)</th>
+                <th>Restant (€)</th>
                 <th>Statut</th>
-                <th>Nb_repas</th>
-                <th>Report_m_1</th>
-                <th>actions</th>
+                <th>Actions</th>
             </tr>
-        </thead>
-        <tbody>
-        {% for facturation in facturations %}
-            <tr>
-                <td>{{ facturation.id }}</td>
-                <td>{{ facturation.mois }}</td>
-                <td>{{ facturation.montantTotal }}</td>
-                <td>{{ facturation.montantRegle }}</td>
-                <td>{{ facturation.montantRestant }}</td>
-                <td>{{ facturation.statut }}</td>
-                <td>{{ facturation.nbRepas }}</td>
-                <td>{{ facturation.reportM1 }}</td>
-                <td>
-                    <a href="{{ path('app_facturation_show', {'id': facturation.id}) }}">show</a>
-                    <a href="{{ path('app_facturation_edit', {'id': facturation.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="9">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_facturation_new') }}">Create new</a>
+            </thead>
+            <tbody>
+            {% for facturation in facturations %}
+                <tr>
+                    <td>{{ facturation.id }}</td>
+                    <td>{{ facturation.mois }}</td>
+                    <td>{{ facturation.refProfesseur ? facturation.refProfesseur.nom : '' }}</td>
+                    <td>{{ facturation.nbRepas }}</td>
+                    <td>{{ facturation.montantTotal }}</td>
+                    <td>{{ facturation.montantRegle }}</td>
+                    <td>{{ facturation.montantRestant }}</td>
+                    <td>{{ facturation.statut ? facturation.statut.value : '' }}</td>
+                    <td>
+                        <a href="{{ path('app_facturation_show', {'id': facturation.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                        <a href="{{ path('app_facturation_edit', {'id': facturation.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                        {{ include('facturation/_delete_form.html.twig') }}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="9" class="text-center">Aucune facturation enregistrée.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
+
