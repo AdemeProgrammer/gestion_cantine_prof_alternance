@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ProfesseurRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProfesseurRepository::class)]
@@ -53,6 +54,9 @@ class Professeur
      */
     #[ORM\OneToMany(targetEntity: Repas::class, mappedBy: 'Professeur')]
     private Collection $repas;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
+    private ?string $prix_u = null;
 
     public function __construct()
     {
@@ -246,6 +250,18 @@ class Professeur
     public function __toString(): string
     {
         return $this->prenom . ' ' . $this->nom;
+    }
+
+    public function getPrixU(): ?string
+    {
+        return $this->prix_u;
+    }
+
+    public function setPrixU(string $prix_u): static
+    {
+        $this->prix_u = $prix_u;
+
+        return $this;
     }
 }
 
