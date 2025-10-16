@@ -1,22 +1,50 @@
-{% extends 'base.html.twig' %}
+ {% extends 'base_login.html.twig' %}
 
-{% block title %}Réinitialiser votre mot de passe{% endblock %}
+{% block title %}Reinitialiser le Mot de Passe{% endblock %}
 
 {% block body %}
-    {% for flash_error in app.flashes('reset_password_error') %}
-        <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
-    {% endfor %}
-    <h1>Réinitialiser votre mot de passe</h1>
+    <!--begin::Form-->
+    {{ form_start(requestForm, {'attr' : {'class' : "form w-100 fv-plugins-bootstrap5 fv-plugins-framework" }}) }}
+        <!--begin::Heading-->
+        <div class="text-center mb-10">
+            <!--begin::Title-->
+            <h1 class="text-gray-900 mb-3">
+                Mot de passe oublié ?
+            </h1>
+            <!--end::Title-->
 
-    {{ form_start(requestForm) }}
-        {{ form_row(requestForm.email) }}
-        <div>
-            <small>
-                Entrez votre adresse mail et nous vous enverrons un mail
-                pour réinitialiser votre mot de passe
-            </small>
+            <!--begin::Link-->
+            <div class="text-gray-500 fw-semibold fs-4">
+                Entrez votre email pour réinitialiser votre mot de passe.
+            </div>
+            <!--end::Link-->
         </div>
+        <!--begin::Heading-->
 
-        <button class="btn btn-primary">Envoyer un mail de réinitialisation de mot de passe</button>
+        <!--begin::Input group-->
+        <div class="fv-row mb-10 fv-plugins-icon-container">
+            {{ form_label(requestForm.email,"Votre email",{'label_attr' : {'class' : 'form-label fw-bold text-gray-900 fs-6'}}) }}
+            {{ form_widget(requestForm.email,{'attr': {'class' : 'form-control form-control-solid' }}) }}
+
+            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                {% for flash_error in app.flashes('reset_password_error') %}
+                    <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        <!--end::Input group-->
+
+        <!--begin::Actions-->
+        <div class="d-flex flex-wrap justify-content-center pb-lg-0">
+            <button type="submit" class="btn btn-lg btn-primary fw-bold me-4">
+            <span class="indicator-label">
+                Demander
+            </span>
+            </button>
+
+            <a href="{{ path('app_login') }}" class="btn btn-lg btn-light-primary fw-bold">Retour</a>
+        </div>
+        <!--end::Actions-->
     {{ form_end(requestForm) }}
+    <!--end::Form-->
 {% endblock %}

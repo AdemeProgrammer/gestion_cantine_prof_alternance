@@ -1,29 +1,80 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_login.html.twig' %}
 
-{% block title %}Log in!{% endblock %}
+{% block title %}Connexion{% endblock %}
+
+{% block javascripts %}
+    <script>
+        const togglePassword = document.querySelector("#togglePassword");
+        const password = document.querySelector("#inputPassword");
+
+        togglePassword.addEventListener("click", function () {
+            // toggle the type attribute
+            const type = password.getAttribute("type") === "password" ? "text" : "password";
+            password.setAttribute("type", type);
+
+            // toggle the icon
+            this.classList.toggle("bi-eye");
+        });
+
+    </script>
+{% endblock %}
+
 
 {% block body %}
-<form method="post">
     {% if error %}
         <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
     {% endif %}
+    <form class="form w-100" novalidate="novalidate" method="post">
+        <!--begin::Heading-->
+        <div class="text-center mb-10">
+            <!--begin::Title-->
+            <h1 class="text-dark mb-3">Connexion</h1>
+            <!--end::Title-->
 
-    {% if app.user %}
-        <div class="mb-3">
-            Vous êtes connecté en tant que {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Se déconnecter</a>
         </div>
-    {% endif %}
+        <!--begin::Heading-->
+        <!--begin::Input group-->
+        <div class="fv-row mb-10">
+            <!--begin::Label-->
+            <label class="form-label fs-6 fw-bold text-dark">Email</label>
+            <!--end::Label-->
+            <!--begin::Input-->
+            <input class="form-control form-control-lg form-control-solid" value="{{ last_username }}" type="text" name="email" />
+            <!--end::Input-->
+        </div>
+        <!--end::Input group-->
+        <!--begin::Input group-->
+        <div class="fv-row mb-10">
+            <!--begin::Wrapper-->
+            <div class="d-flex flex-stack mb-2">
+                <!--begin::Label-->
+                <label class="form-label fw-bold text-dark fs-6 mb-0">Password</label>
+                <!--end::Label-->
+                <!--begin::Link-->
+                <a href="{{ path('app_forgot_password_request') }}" class="link-primary fs-6 fw-bold">Mot de passe oublié ?</a>
+                <!--end::Link-->
+            </div>
+            <!--end::Wrapper-->
+            <!--begin::Input-->
+            <input class="form-control form-control-lg form-control-solid" type="password" name="password" autocomplete="off" />
+            <!--end::Input-->
+        </div>
+        <!--end::Input group-->
+        <!--begin::Actions-->
+        <div class="text-center">
+            <!--begin::Submit button-->
+            <input type="hidden" name="_csrf_token"
+                   value="{{ csrf_token('authenticate') }}">
+            <button type="submit" id="kt_sign_in_submit" class="btn btn-lg btn-primary w-100 mb-5">
+                <span class="indicator-label">Continue</span>
+                <span class="indicator-progress">Please wait...
+										<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+            </button>
+            <!--end::Submit button-->
 
-    <h1 class="h3 mb-3 font-weight-normal">Veuillez vous connecter</h1>
-    <label for="inputEmail">Email</label>
-    <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
-    <label for="inputPassword">Password</label>
-    <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
-    <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
-    <span><a href="{{ path('app_forgot_password_request') }}"><u>Mot de passe oublié</u></a></span>
-    <br>
-    <button class="btn btn-lg btn-primary" type="submit" >
-        Se connecter
-    </button>
-</form>
+        </div>
+        <!--end::Actions-->
+    </form>
+
+
 {% endblock %}

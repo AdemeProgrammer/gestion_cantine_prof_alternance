@@ -5,7 +5,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    {# KeenIcons (assure-toi que ces 3 fichiers existent à cet emplacement) #}
+    {# KeenIcons #}
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/duotone/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/outline/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/solid/style.css') }}">
@@ -14,23 +14,43 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 
     <style>
+        :root{
+            --icon-size: 22px; /* taille des icônes des boutons */
+            --yes-bg: #e8f5e9;
+            --yes-bd: #b7e1be;
+            --yes-fg: #1e7e34;
+            --no-bg:  #f1f3f5;
+            --no-bd:  #e9ecef;
+            --no-fg:  #6c757d;
+        }
+
         .card-dashed { border: 2px dashed rgba(0,0,0,.08) !important; }
         .card-hover { transition: transform .15s ease, box-shadow .15s ease; }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
         .table thead th { white-space: nowrap; }
 
+        /* centrage par défaut */
+        #descriptionTable th, #descriptionTable td { vertical-align: middle; text-align: center; }
+
+        /* boutons d’actions (pleins + plus grands) */
         .btn-icon{
-            width:36px;height:36px;padding:0;
+            width:40px;height:40px;padding:0;
             display:inline-flex;align-items:center;justify-content:center;
-            border-radius:.6rem;
+            border-radius:.7rem;
         }
-        .col-actions{ width:132px; white-space:nowrap; }
-        .col-day{ width:52px; text-align:center; }
-        .badge-soft{ background:rgba(0,0,0,.06); }
-        .truncate-2{
-            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
-            overflow:hidden;
+        .btn-icon i[class^="ki-"], .btn-icon i[class*=" ki-"]{ font-size: var(--icon-size); line-height: 1; }
+        .col-actions{ width: 152px; white-space: nowrap; } /* 3 x 40px + gaps */
+
+        /* pastilles des jours */
+        .day-pill{
+            width:28px;height:28px;border-radius:999px;
+            display:inline-flex;align-items:center;justify-content:center;
+            font-weight:600;border:1px solid transparent;
         }
+        .day-yes{ background:var(--yes-bg); color:var(--yes-fg); border-color:var(--yes-bd); }
+        .day-no { background:var(--no-bg);  color:var(--no-fg);  border-color:var(--no-bd);  }
+
+        .col-day{ width:56px; }
     </style>
 {% endblock %}
 
@@ -68,6 +88,7 @@
                             </thead>
                             <tbody>
                             {% for d in descriptions %}
+                                {# professeur #}
                                 {% set profTxt = '—' %}
                                 {% if d.refProfesseur %}
                                     {% set p = d.refProfesseur %}
@@ -80,15 +101,15 @@
                                     {% endif %}
                                 {% endif %}
 
+                                {# promo #}
                                 {% set promoTxt = '—' %}
+                                {% set promoHasYears = false %}
                                 {% if d.refPromo %}
                                     {% set pr = d.refPromo %}
                                     {% if pr.anneeDebut is defined and pr.anneeDebut is not null %}
-                                        {% if pr.anneeFin is defined and pr.anneeFin is not null %}
-                                            {% set promoTxt = pr.anneeDebut ~ '–' ~ pr.anneeFin %}
-                                        {% else %}
-                                            {% set promoTxt = pr.anneeDebut ~ '–' ~ (pr.anneeDebut + 1) %}
-                                        {% endif %}
+                                        {% set y1 = pr.anneeDebut %}
+                                        {% set y2 = (pr.anneeFin is defined and pr.anneeFin is not null) ? pr.anneeFin : (pr.anneeDebut + 1) %}
+                                        {% set promoHasYears = true %}
                                     {% elseif pr.nom is defined %}
                                         {% set promoTxt = pr.nom %}
                                     {% else %}
@@ -96,53 +117,65 @@
                                     {% endif %}
                                 {% endif %}
 
+                                {# booléens jours #}
                                 {% set L  = d.lundi    ? 1 : 0 %}
                                 {% set Ma = d.mardi    ? 1 : 0 %}
                                 {% set Me = d.mercredi ? 1 : 0 %}
                                 {% set J  = d.jeudi    ? 1 : 0 %}
                                 {% set V  = d.vendredi ? 1 : 0 %}
 
+                                {# report #}
                                 {% set reportVal = d.report ?? '' %}
                                 {% set reportDisplay = reportVal is same as('') ? '—' : (reportVal|number_format(2, ',', ' ')) ~ ' €' %}
 
                                 <tr>
                                     <td>{{ profTxt }}</td>
-                                    <td>{{ promoTxt }}</td>
 
-                                    <td class="text-center" data-order="{{ L }}">
+                                    <td>
+                                        {% if promoHasYears %}
+                                            <div class="lh-1">
+                                                <div>{{ y1 }}</div>
+                                                <div>{{ y2 }}</div>
+                                            </div>
+                                        {% else %}
+                                            {{ promoTxt }}
+                                        {% endif %}
+                                    </td>
+
+                                    <td data-order="{{ L }}">
                                         {% if L %}
-                                            <i class="ki-duotone ki-check">
-                                                <i class="path1"></i><i class="path2"></i>
-                                            </i>
-                                        {% else %}—{% endif %}
+                                            <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                        {% else %}
+                                            <i class="ki-outline ki-minus"></i></span>
+                                        {% endif %}
                                     </td>
-                                    <td class="text-center" data-order="{{ Ma }}">
+                                    <td data-order="{{ Ma }}">
                                         {% if Ma %}
-                                            <i class="ki-duotone ki-check">
-                                                <i class="path1"></i><i class="path2"></i>
-                                            </i>
-                                        {% else %}—{% endif %}
+                                            <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                        {% else %}
+                                            <i class="ki-outline ki-minus"></i></span>
+                                        {% endif %}
                                     </td>
-                                    <td class="text-center" data-order="{{ Me }}">
+                                    <td data-order="{{ Me }}">
                                         {% if Me %}
-                                            <i class="ki-duotone ki-check">
-                                                <i class="path1"></i><i class="path2"></i>
-                                            </i>
-                                        {% else %}—{% endif %}
+                                            <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                        {% else %}
+                                            <i class="ki-outline ki-minus"></i></span>
+                                        {% endif %}
                                     </td>
-                                    <td class="text-center" data-order="{{ J }}">
+                                    <td data-order="{{ J }}">
                                         {% if J %}
-                                            <i class="ki-duotone ki-check">
-                                                <i class="path1"></i><i class="path2"></i>
-                                            </i>
-                                        {% else %}—{% endif %}
+                                            <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                        {% else %}
+                                            <i class="ki-outline ki-minus"></i></span>
+                                        {% endif %}
                                     </td>
-                                    <td class="text-center" data-order="{{ V }}">
+                                    <td data-order="{{ V }}">
                                         {% if V %}
-                                            <i class="ki-duotone ki-check">
-                                                <i class="path1"></i><i class="path2"></i>
-                                            </i>
-                                        {% else %}—{% endif %}
+                                            <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                        {% else %}
+                                            <i class="ki-outline ki-minus"></i></span>
+                                        {% endif %}
                                     </td>
 
                                     <td data-order="{{ reportVal is same as('') ? '' : reportVal|replace({',':'.'}) }}">
@@ -150,29 +183,23 @@
                                     </td>
 
                                     <td class="text-end">
-                                        <div class="d-inline-flex gap-1">
-                                            <a class="btn btn-outline-secondary btn-icon"
+                                        <div class="d-inline-flex gap-2">
+                                            <a class="btn btn-secondary btn-icon"
                                                href="{{ path('app_description_show', {'id': d.id}) }}"
                                                title="Voir" aria-label="Voir">
-                                                <i class="ki-duotone ki-eye">
-                                                    <i class="path1"></i><i class="path2"></i>
-                                                </i>
+                                                <i class="ki-outline ki-eye"></i>
                                             </a>
-                                            <a class="btn btn-outline-primary btn-icon"
+                                            <a class="btn btn-primary btn-icon"
                                                href="{{ path('app_description_edit', {'id': d.id}) }}"
                                                title="Modifier" aria-label="Modifier">
-                                                <i class="ki-duotone ki-pencil">
-                                                    <i class="path1"></i><i class="path2"></i>
-                                                </i>
+                                                <i class="ki-outline ki-pencil"></i>
                                             </a>
                                             <form method="post" action="{{ path('app_description_delete', {'id': d.id}) }}"
                                                   style="display:inline"
                                                   onsubmit="return confirm('Supprimer cette description ?');">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ d.id) }}">
-                                                <button class="btn btn-outline-danger btn-icon" title="Supprimer" aria-label="Supprimer">
-                                                    <i class="ki-duotone ki-trash">
-                                                        <i class="path1"></i><i class="path2"></i>
-                                                    </i>
+                                                <button class="btn btn-danger btn-icon" title="Supprimer" aria-label="Supprimer">
+                                                    <i class="ki-outline ki-trash"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -207,7 +234,6 @@
                 "sZeroRecords":"Aucun résultat trouvé",
                 "oPaginate":{"sFirst":"Premier","sLast":"Dernier","sNext":"Suivant","sPrevious":"Précédent"}
             };
-
             $(function () {
                 $('#descriptionTable').DataTable({
                     language: fr,
@@ -215,9 +241,9 @@
                     order: [[0, 'asc']],
                     responsive: true,
                     columnDefs: [
-                        { targets: [2,3,4,5,6], className: 'text-center' },
+                        { targets: [0,1,2,3,4,5,6,7,-1], className: 'text-center' }, // tout centré
                         { targets: -1, orderable: false },
-                        { targets: 7, type: 'num' }
+                        { targets: 7, type: 'num' } // report tri numérique
                     ]
                 });
             });

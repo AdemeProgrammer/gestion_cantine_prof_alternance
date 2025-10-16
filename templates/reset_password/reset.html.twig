@@ -1,12 +1,64 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_login.html.twig' %}
 
-{% block title %}Réinitialiser votre mot de passe{% endblock %}
+{% block title %}Reset your password{% endblock %}
 
 {% block body %}
-    <h1>Réinitialiser votre mot de passe</h1>
 
-    {{ form_start(resetForm) }}
-        {{ form_row(resetForm.plainPassword) }}
-        <button class="btn btn-primary">Réinitialiser votre mot de passe</button>
+
+    <!--begin::Form-->
+    {{ form_start(resetForm,{'attr' : {'class' : 'form w-100 fv-plugins-bootstrap5 fv-plugins-framework'}}) }}
+        <!--begin::Heading-->
+        <div class="text-center mb-10">
+            <!--begin::Title-->
+            <h1 class="text-gray-900 mb-3">
+                Changement de votre mot de passe
+            </h1>
+            <!--end::Title-->
+        </div>
+        <!--begin::Heading-->
+
+        <!--begin::Input group-->
+        <div class="mb-10 fv-row fv-plugins-icon-container" >
+            <!--begin::Wrapper-->
+            <div class="mb-1">
+                <!--begin::Label-->
+                {{ form_label(resetForm.plainPassword.first,'Votre nouveau mot de passe',{'label_attr' : {'class' : 'form-label fw-bold text-gray-900 fs-6'}}) }}
+
+                <!--end::Label-->
+
+                <!--begin::Input wrapper-->
+                <div class="position-relative mb-3">
+                    {{ form_widget(resetForm.plainPassword.first,{'attr' : {'class' : 'form-control form-control-lg form-control-solid'}}) }}
+                </div>
+                <!--end::Input wrapper-->
+            </div>
+            <!--end::Wrapper-->
+
+            <!--begin::Hint-->
+            <div class="text-muted">
+                Use 8 or more characters with a mix of letters, numbers &amp; symbols.
+            </div>
+            <!--end::Hint-->
+        </div>
+
+        <!--end::Input group--->
+
+        <!--begin::Input group--->
+        <div class="fv-row mb-10 fv-plugins-icon-container">
+            {{ form_label(resetForm.plainPassword.second,"Confirmez le mot de passe",{'label_attr' : {'class' : 'form-label fw-bold text-gray-900 fs-6'}}) }}
+
+            {{ form_widget(resetForm.plainPassword.second,{'attr' : {'class' : 'form-control form-control-lg form-control-solid'}}) }}
+        </div>
+        <!--end::Input group--->
+
+        <!--begin::Action-->
+        <div class="text-center">
+            <button type="submit" id="kt_new_password_submit" class="btn btn-lg btn-primary fw-bold">
+            <span class="indicator-label">
+                Réinitialisation du mot de passe
+            </span>
+            </button>
+        </div>
+        <!--end::Action-->
     {{ form_end(resetForm) }}
 {% endblock %}
