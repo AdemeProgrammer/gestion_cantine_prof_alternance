@@ -1,7 +1,16 @@
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
 {% block title %}Mois — {{ firstOfMonth|date('F Y', 'Europe/Paris')|capitalize }}{% endblock %}
-
+{% block titre_page %}{{ firstOfMonth|date('F Y', 'Europe/Paris')|capitalize }}{% endblock %}
+{% block action_page %}
+    
+{% endblock %}
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Promotion") }}
+    {{ _breadcumb.etape("Année") }}
+    {{ _breadcumb.etape("Mois") }}
+{% endblock %}
 {% block body %}
     <div class="container py-4">
 

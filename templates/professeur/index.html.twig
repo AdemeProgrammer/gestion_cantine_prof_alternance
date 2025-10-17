@@ -1,43 +1,139 @@
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
-{% block title %}Index des professeurs{% endblock %}
+{% block title %}Professeur{% endblock %}
+{% block titre_page %}Liste des professeurs{% endblock %}
+{% block action_page %}
+    <a href="{{ path('app_professeur_new') }}" class="btn btn-primary">Créer un nouveau professeur</a>
+{% endblock %}
+
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Professeur") }}
+    {{ _breadcumb.etape("Accueil") }}
+{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    {# KeenIcons locaux (si non déjà globaux) #}
+    <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/duotone/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/outline/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/solid/style.css') }}">
+    {# DataTables (bundle local Saul) #}
+    <link rel="stylesheet" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}">
+{% endblock %}
 
 {% block body %}
-    <h1>Index des professeurs</h1>
+    <div class="container-xxl py-8">
 
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Id</th>
-            <th>Prénom</th>
-            <th>Nom</th>
-            <th>Email</th>
-            <th>Code compta</th>
-            <th>Actif</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for professeur in professeurs %}
-            <tr>
-                <td>{{ professeur.id }}</td>
-                <td>{{ professeur.prenom }}</td>
-                <td>{{ professeur.nom }}</td>
-                <td>{{ professeur.email }}</td>
-                <td>{{ professeur.codeCompta ?? '—' }}</td>
-                <td>{{ professeur.estActif ? 'Oui' : 'Non' }}</td>
-                <td>
-                    <a href="{{ path('app_professeur_show', {'id': professeur.id}) }}">Afficher</a>
-                    <a href="{{ path('app_professeur_edit', {'id': professeur.id}) }}">Modifier</a>
-                </td>
-            </tr>
+        {% if professeurs is empty %}
+            <div class="card card-dashed">
+                <div class="card-body text-center py-10">
+                    <div class="fs-5 mb-3">Aucun professeur enregistré.</div>
+                    <a href="{{ path('app_professeur_new') }}" class="btn btn-sm btn-primary">Créer le premier professeur</a>
+                </div>
+            </div>
         {% else %}
-            <tr>
-                <td colspan="7">Aucun enregistrement trouvé</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="profTable" class="table table-row-dashed align-middle gy-3">
+                            <thead>
+                            <tr class="text-muted fw-semibold">
+                                <th>Prénom</th>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Code compta</th>
+                                <th class="text-center">Actif</th>
+                                <th class="text-end min-w-175px">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for professeur in professeurs %}
+                                {% set code = professeur.codeCompta is defined and professeur.codeCompta ? professeur.codeCompta : '—' %}
+                                {% set actif = professeur.estActif ? 1 : 0 %}
+                                <tr>
+                                    <td class="fw-semibold">{{ professeur.prenom }}</td>
+                                    <td class="fw-semibold">{{ professeur.nom }}</td>
+                                    <td>
+                                        {% if professeur.email %}
+                                            <a href="mailto:{{ professeur.email }}">{{ professeur.email }}</a>
+                                        {% else %} — {% endif %}
+                                    </td>
+                                    <td>{{ code }}</td>
+                                    <td class="text-center" data-order="{{ actif }}">
+                                        {% if professeur.estActif %}
+                                            <span class="badge badge-light-success px-3 py-2">Oui</span>
+                                        {% else %}
+                                            <span class="badge badge-light px-3 py-2">Non</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2">
+                                            <a class="btn btn-icon btn-light-secondary"
+                                               href="{{ path('app_professeur_show', {'id': professeur.id}) }}"
+                                               title="Afficher" aria-label="Afficher">
+                                                <i class="ki-outline ki-eye fs-3"></i>
+                                            </a>
+                                            <a class="btn btn-icon btn-primary"
+                                               href="{{ path('app_professeur_edit', {'id': professeur.id}) }}"
+                                               title="Modifier" aria-label="Modifier">
+                                                <i class="ki-outline ki-pencil fs-3"></i>
+                                            </a>
+                                            {# Suppression inline (décommente si souhaité)
+                      <form method="post" action="{{ path('app_professeur_delete', {'id': professeur.id}) }}"
+                            class="d-inline" onsubmit="return confirm('Supprimer ce professeur ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ professeur.id) }}">
+                        <button class="btn btn-icon btn-danger" title="Supprimer" aria-label="Supprimer">
+                          <i class="ki-outline ki-trash fs-3"></i>
+                        </button>
+                      </form>
+                                            #}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
 
-    <a href="{{ path('app_professeur_new') }}">Créer un nouveau professeur</a>
+{% block javascripts %}
+    {{ parent() }}
+    {# DataTables (bundle local Saul) #}
+    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <script>
+        (function(){
+            const fr = {
+                "sEmptyTable":"Aucune donnée disponible",
+                "sInfo":"Affichage _START_ à _END_ sur _TOTAL_",
+                "sInfoEmpty":"Affichage 0 à 0 sur 0",
+                "sInfoFiltered":"(filtré de _MAX_ au total)",
+                "sLengthMenu":"Afficher _MENU_",
+                "sLoadingRecords":"Chargement...",
+                "sProcessing":"Traitement...",
+                "sSearch":"Rechercher :",
+                "sZeroRecords":"Aucun résultat trouvé",
+                "oPaginate":{"sFirst":"Premier","sLast":"Dernier","sNext":"Suivant","sPrevious":"Précédent"}
+            };
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const $ = window.jQuery;           // fourni par plugins.bundle.js via ton layout
+                if (!$) return;
+                $('#profTable').DataTable({
+                    language: fr,
+                    pageLength: 25,
+                    order: [[0,'asc']],           // tri sur "Prénom"
+                    responsive: true,
+                    autoWidth: false,
+                    columnDefs: [
+                        { targets: -1, orderable: false, className: 'text-end' }, // Actions
+                        { targets: 4, className: 'text-center' }                  // Actif
+                    ]
+                });
+            });
+        })();
+    </script>
 {% endblock %}

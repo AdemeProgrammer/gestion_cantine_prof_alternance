@@ -4,112 +4,156 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    {# KeenIcons #}
+    {# KeenIcons locaux (si non déjà globaux dans base.html.twig) #}
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/duotone/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/outline/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/solid/style.css') }}">
-
-    <style>
-        :root{
-            --icon-size: 22px;
-            --yes-bg: #e8f5e9;
-            --yes-bd: #b7e1be;
-            --yes-fg: #1e7e34;
-            --no-bg:  #f1f3f5;
-            --no-bd:  #e9ecef;
-            --no-fg:  #6c757d;
-        }
-        .card-dashed { border: 2px dashed rgba(0,0,0,.08) !important; }
-        .card-hover { transition: transform .15s ease, box-shadow .15s ease; }
-        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
-        .table thead th { white-space: nowrap; }
-        .day-pill{
-            width:28px;height:28px;border-radius:999px;
-            display:inline-flex;align-items:center;justify-content:center;
-            font-weight:600;border:1px solid transparent;
-        }
-        .day-yes{ background:var(--yes-bg); color:var(--yes-fg); border-color:var(--yes-bd); }
-        .day-no { background:var(--no-bg);  color:var(--no-fg);  border-color:var(--no-bd); }
-        .col-day{ width:56px; }
-    </style>
 {% endblock %}
 
 {% block body %}
-    <div class="container py-4">
-        <div class="card shadow-sm card-hover">
+    <div class="container-xxl py-8">
+        <div class="card shadow-sm">
             <div class="card-body">
-                <h3 class="mb-4">Description #{{ description.id }}</h3>
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered align-middle">
-                        <tbody>
+                <h3 class="mb-6">Description #{{ description.id }}</h3>
+
+                {# Prof / Promo (mêmes règles que l’index) #}
+                {% set profTxt = '—' %}
+                {% if description.refProfesseur is defined and description.refProfesseur %}
+                    {% set p = description.refProfesseur %}
+                    {% if p.prenom is defined or p.nom is defined %}
+                        {% set profTxt = (p.prenom is defined ? p.prenom ~ ' ' : '') ~ (p.nom is defined ? p.nom : '') %}
+                    {% elseif p.email is defined %}
+                        {% set profTxt = p.email %}
+                    {% else %}
+                        {% set profTxt = 'Professeur' %}
+                    {% endif %}
+                {% endif %}
+
+                {% set promoTxt = '—' %}
+                {% set promoHasYears = false %}
+                {% if description.refPromo is defined and description.refPromo %}
+                    {% set pr = description.refPromo %}
+                    {% if pr.anneeDebut is defined and pr.anneeDebut is not null %}
+                        {% set y1 = pr.anneeDebut %}
+                        {% set y2 = (pr.anneeFin is defined and pr.anneeFin is not null) ? pr.anneeFin : (pr.anneeDebut + 1) %}
+                        {% set promoHasYears = true %}
+                    {% elseif pr.nom is defined %}
+                        {% set promoTxt = pr.nom %}
+                    {% else %}
+                        {% set promoTxt = 'Promo' %}
+                    {% endif %}
+                {% endif %}
+
+                <div class="table-responsive mb-6">
+                    <table class="table table-row-dashed align-middle">
+                        <tbody class="fw-normal text-gray-700">
                         <tr>
-                            <th>Id</th>
-                            <td>{{ description.id }}</td>
+                            <th class="fw-normal text-gray-500">Professeur</th>
+                            <td class="fw-semibold">{{ profTxt }}</td>
                         </tr>
                         <tr>
-                            <th>Lundi</th>
+                            <th class="fw-normal text-gray-500">Promo</th>
+                            <td>
+                                {% if promoHasYears %}
+                                    <div class="d-flex flex-column lh-1">
+                                        <span class="fw-semibold">{{ y1 }}</span>
+                                        <span class="text-gray-500">{{ y2 }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="fw-semibold">{{ promoTxt }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="fw-normal text-gray-500">Lundi</th>
                             <td>
                                 {% if description.lundi %}
-                                    <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                    <span class="badge badge-light-success p-2">
+                      <i class="ki-outline ki-check fs-3"></i>
+                    </span>
                                 {% else %}
-                                    <span class="day-pill day-no"><i class="ki-outline ki-minus"></i></span>
+                                    <span class="badge badge-light p-2">
+                      <i class="ki-outline ki-minus fs-3 text-gray-500"></i>
+                    </span>
                                 {% endif %}
                             </td>
                         </tr>
                         <tr>
-                            <th>Mardi</th>
+                            <th class="fw-normal text-gray-500">Mardi</th>
                             <td>
                                 {% if description.mardi %}
-                                    <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                    <span class="badge badge-light-success p-2">
+                      <i class="ki-outline ki-check fs-3"></i>
+                    </span>
                                 {% else %}
-                                    <span class="day-pill day-no"><i class="ki-outline ki-minus"></i></span>
+                                    <span class="badge badge-light p-2">
+                      <i class="ki-outline ki-minus fs-3 text-gray-500"></i>
+                    </span>
                                 {% endif %}
                             </td>
                         </tr>
                         <tr>
-                            <th>Mercredi</th>
+                            <th class="fw-normal text-gray-500">Mercredi</th>
                             <td>
                                 {% if description.mercredi %}
-                                    <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                    <span class="badge badge-light-success p-2">
+                      <i class="ki-outline ki-check fs-3"></i>
+                    </span>
                                 {% else %}
-                                    <span class="day-pill day-no"><i class="ki-outline ki-minus"></i></span>
+                                    <span class="badge badge-light p-2">
+                      <i class="ki-outline ki-minus fs-3 text-gray-500"></i>
+                    </span>
                                 {% endif %}
                             </td>
                         </tr>
                         <tr>
-                            <th>Jeudi</th>
+                            <th class="fw-normal text-gray-500">Jeudi</th>
                             <td>
                                 {% if description.jeudi %}
-                                    <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                    <span class="badge badge-light-success p-2">
+                      <i class="ki-outline ki-check fs-3"></i>
+                    </span>
                                 {% else %}
-                                    <span class="day-pill day-no"><i class="ki-outline ki-minus"></i></span>
+                                    <span class="badge badge-light p-2">
+                      <i class="ki-outline ki-minus fs-3 text-gray-500"></i>
+                    </span>
                                 {% endif %}
                             </td>
                         </tr>
                         <tr>
-                            <th>Vendredi</th>
+                            <th class="fw-normal text-gray-500">Vendredi</th>
                             <td>
                                 {% if description.vendredi %}
-                                    <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                    <span class="badge badge-light-success p-2">
+                      <i class="ki-outline ki-check fs-3"></i>
+                    </span>
                                 {% else %}
-                                    <span class="day-pill day-no"><i class="ki-outline ki-minus"></i></span>
+                                    <span class="badge badge-light p-2">
+                      <i class="ki-outline ki-minus fs-3 text-gray-500"></i>
+                    </span>
                                 {% endif %}
                             </td>
                         </tr>
                         <tr>
-                            <th>Report</th>
-                            <td>{{ description.report ?? '—' }} €</td>
+                            <th class="fw-normal text-gray-500">Report</th>
+                            <td class="fw-semibold">
+                                {% if description.report is null %}
+                                    —
+                                {% else %}
+                                    {{ description.report|number_format(2, ',', ' ') }} €
+                                {% endif %}
+                            </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div class="mt-3 d-flex gap-2">
-                    <a href="{{ path('app_description_index') }}" class="btn btn-secondary btn-icon" title="Retour">
-                        <i class="ki-outline ki-arrow-left"></i>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ path('app_description_index') }}" class="btn btn-light-secondary btn-icon" title="Retour" aria-label="Retour">
+                        <i class="ki-outline ki-arrow-left fs-3"></i>
                     </a>
-                    <a href="{{ path('app_description_edit', {'id': description.id}) }}" class="btn btn-primary btn-icon" title="Modifier">
-                        <i class="ki-outline ki-pencil"></i>
+                    <a href="{{ path('app_description_edit', {'id': description.id}) }}" class="btn btn-primary btn-icon" title="Modifier" aria-label="Modifier">
+                        <i class="ki-outline ki-pencil fs-3"></i>
                     </a>
                     {{ include('description/_delete_form.html.twig') }}
                 </div>
@@ -117,4 +161,3 @@
         </div>
     </div>
 {% endblock %}
-

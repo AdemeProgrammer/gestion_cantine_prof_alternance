@@ -1,13 +1,21 @@
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
-{% block title %}Modifier une description{% endblock %}
+{% block title %}Description{% endblock %}
+{% block titre_page %}Modifier une description{% endblock %}
+{% block action_page %}
+    {{ include('description/_delete_form.html.twig') }}
+{% endblock %}
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Promotion") }}
+    {{ _breadcumb.etape("Année") }}
+    {{ _breadcumb.etape("Mois") }}
+{% endblock %}
 
 {% block body %}
-    <h1>Modifier une description</h1>
 
     {{ include('description/_form.html.twig', {'button_label': 'Update'}) }}
 
     <a href="{{ path('app_description_index') }}">Revenir à la liste des descriptions</a>
 
-    {{ include('description/_delete_form.html.twig') }}
 {% endblock %}

@@ -1,7 +1,15 @@
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
 {% block title %}Calendrier — {{ promo.anneeDebut }}-{{ promo.anneeFin }}{% endblock %}
+{% block titre_page %}{{ promo.anneeDebut }}-{{ promo.anneeFin }}{% endblock %}
+{% block action_page %}
 
+{% endblock %}
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Promotion") }}
+    {{ _breadcumb.etape("Année") }}
+{% endblock %}
 {% block body %}
     <div class="container py-4">
         <div class="d-flex align-items-center justify-content-between mb-4">

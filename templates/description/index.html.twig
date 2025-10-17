@@ -1,89 +1,54 @@
-{# templates/description/index.html.twig #}
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
-{% block title %}Descriptions{% endblock %}
+{% block title %}Description{% endblock %}
+{% block titre_page %}Gestion des descriptions{% endblock %}
+{% block action_page %}
+    <a href="{{ path('app_description_new') }}" class="btn btn-primary">+ Créer une description</a>
+{% endblock %}
+
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Description") }}
+    {{ _breadcumb.etape("Accueil") }}
+{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
-    {# KeenIcons #}
+    {# KeenIcons (locaux) si non chargés globalement #}
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/duotone/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/outline/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/solid/style.css') }}">
 
-    {# DataTables #}
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
-
-    <style>
-        :root{
-            --icon-size: 22px; /* taille des icônes des boutons */
-            --yes-bg: #e8f5e9;
-            --yes-bd: #b7e1be;
-            --yes-fg: #1e7e34;
-            --no-bg:  #f1f3f5;
-            --no-bd:  #e9ecef;
-            --no-fg:  #6c757d;
-        }
-
-        .card-dashed { border: 2px dashed rgba(0,0,0,.08) !important; }
-        .card-hover { transition: transform .15s ease, box-shadow .15s ease; }
-        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
-        .table thead th { white-space: nowrap; }
-
-        /* centrage par défaut */
-        #descriptionTable th, #descriptionTable td { vertical-align: middle; text-align: center; }
-
-        /* boutons d’actions (pleins + plus grands) */
-        .btn-icon{
-            width:40px;height:40px;padding:0;
-            display:inline-flex;align-items:center;justify-content:center;
-            border-radius:.7rem;
-        }
-        .btn-icon i[class^="ki-"], .btn-icon i[class*=" ki-"]{ font-size: var(--icon-size); line-height: 1; }
-        .col-actions{ width: 152px; white-space: nowrap; } /* 3 x 40px + gaps */
-
-        /* pastilles des jours */
-        .day-pill{
-            width:28px;height:28px;border-radius:999px;
-            display:inline-flex;align-items:center;justify-content:center;
-            font-weight:600;border:1px solid transparent;
-        }
-        .day-yes{ background:var(--yes-bg); color:var(--yes-fg); border-color:var(--yes-bd); }
-        .day-no { background:var(--no-bg);  color:var(--no-fg);  border-color:var(--no-bd);  }
-
-        .col-day{ width:56px; }
-    </style>
+    {# DataTables (bundle local Saul) #}
+    <link rel="stylesheet" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}">
 {% endblock %}
 
 {% block body %}
     <div class="container py-4">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 m-0">Gestion des descriptions</h1>
-            <a href="{{ path('app_description_new') }}" class="btn btn-primary">+ Créer une description</a>
-        </div>
 
         {% if descriptions is empty %}
-            <div class="card card-dashed card-hover">
-                <div class="card-body text-center py-5">
-                    <div class="mb-2">Aucune description enregistrée.</div>
+            <div class="card card-dashed hover-elevate-up">
+                <div class="card-body text-center py-10">
+                    <div class="fs-5 mb-3">Aucune description enregistrée.</div>
                     <a href="{{ path('app_description_new') }}" class="btn btn-sm btn-primary">Créer la première description</a>
                 </div>
             </div>
         {% else %}
-            <div class="card shadow-sm card-hover">
+            <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table id="descriptionTable" class="table table-sm table-striped align-middle">
+                        <table id="descriptionTable" class="table table-row-dashed align-middle gy-3">
                             <thead>
-                            <tr>
+                            <tr class="text-muted fw-semibold">
                                 <th>Professeur</th>
                                 <th>Promo</th>
-                                <th class="col-day">L</th>
-                                <th class="col-day">Ma</th>
-                                <th class="col-day">Me</th>
-                                <th class="col-day">J</th>
-                                <th class="col-day">V</th>
+                                <th class="text-center w-50px">L</th>
+                                <th class="text-center w-50px">Ma</th>
+                                <th class="text-center w-50px">Me</th>
+                                <th class="text-center w-50px">J</th>
+                                <th class="text-center w-50px">V</th>
                                 <th>Report</th>
-                                <th class="text-end col-actions">Actions</th>
+                                <th class="text-end min-w-175px">Actions</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -129,52 +94,63 @@
                                 {% set reportDisplay = reportVal is same as('') ? '—' : (reportVal|number_format(2, ',', ' ')) ~ ' €' %}
 
                                 <tr>
-                                    <td>{{ profTxt }}</td>
+                                    <td class="fw-semibold">{{ profTxt }}</td>
 
                                     <td>
                                         {% if promoHasYears %}
-                                            <div class="lh-1">
-                                                <div>{{ y1 }}</div>
-                                                <div>{{ y2 }}</div>
+                                            <div class="d-flex flex-column lh-1">
+                                                <span class="fw-semibold">{{ y1 }}</span>
+                                                <span class="text-gray-500">{{ y2 }}</span>
                                             </div>
                                         {% else %}
                                             {{ promoTxt }}
                                         {% endif %}
                                     </td>
 
-                                    <td data-order="{{ L }}">
+                                    {# Jours : badge vert si oui, tiret si non #}
+                                    <td class="text-center" data-order="{{ L }}">
                                         {% if L %}
-                                            <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                            <span class="badge badge-light-success p-2">
+                                                <i class="ki-outline ki-check fs-4"></i>
+                                            </span>
                                         {% else %}
-                                            <i class="ki-outline ki-minus"></i></span>
+                                            <i class="ki-outline ki-minus fs-3 text-gray-400"></i>
                                         {% endif %}
                                     </td>
-                                    <td data-order="{{ Ma }}">
+                                    <td class="text-center" data-order="{{ Ma }}">
                                         {% if Ma %}
-                                            <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                            <span class="badge badge-light-success p-2">
+                                                <i class="ki-outline ki-check fs-4"></i>
+                                            </span>
                                         {% else %}
-                                            <i class="ki-outline ki-minus"></i></span>
+                                            <i class="ki-outline ki-minus fs-3 text-gray-400"></i>
                                         {% endif %}
                                     </td>
-                                    <td data-order="{{ Me }}">
+                                    <td class="text-center" data-order="{{ Me }}">
                                         {% if Me %}
-                                            <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                            <span class="badge badge-light-success p-2">
+                                                <i class="ki-outline ki-check fs-4"></i>
+                                            </span>
                                         {% else %}
-                                            <i class="ki-outline ki-minus"></i></span>
+                                            <i class="ki-outline ki-minus fs-3 text-gray-400"></i>
                                         {% endif %}
                                     </td>
-                                    <td data-order="{{ J }}">
+                                    <td class="text-center" data-order="{{ J }}">
                                         {% if J %}
-                                            <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                            <span class="badge badge-light-success p-2">
+                                                <i class="ki-outline ki-check fs-4"></i>
+                                            </span>
                                         {% else %}
-                                            <i class="ki-outline ki-minus"></i></span>
+                                            <i class="ki-outline ki-minus fs-3 text-gray-400"></i>
                                         {% endif %}
                                     </td>
-                                    <td data-order="{{ V }}">
+                                    <td class="text-center" data-order="{{ V }}">
                                         {% if V %}
-                                            <span class="day-pill day-yes"><i class="ki-outline ki-check"></i></span>
+                                            <span class="badge badge-light-success p-2">
+                                                <i class="ki-outline ki-check fs-4"></i>
+                                            </span>
                                         {% else %}
-                                            <i class="ki-outline ki-minus"></i></span>
+                                            <i class="ki-outline ki-minus fs-3 text-gray-400"></i>
                                         {% endif %}
                                     </td>
 
@@ -184,22 +160,22 @@
 
                                     <td class="text-end">
                                         <div class="d-inline-flex gap-2">
-                                            <a class="btn btn-secondary btn-icon"
+                                            <a class="btn btn-icon btn-light-secondary"
                                                href="{{ path('app_description_show', {'id': d.id}) }}"
                                                title="Voir" aria-label="Voir">
-                                                <i class="ki-outline ki-eye"></i>
+                                                <i class="ki-outline ki-eye fs-3"></i>
                                             </a>
-                                            <a class="btn btn-primary btn-icon"
+                                            <a class="btn btn-icon btn-primary"
                                                href="{{ path('app_description_edit', {'id': d.id}) }}"
                                                title="Modifier" aria-label="Modifier">
-                                                <i class="ki-outline ki-pencil"></i>
+                                                <i class="ki-outline ki-pencil fs-3"></i>
                                             </a>
                                             <form method="post" action="{{ path('app_description_delete', {'id': d.id}) }}"
-                                                  style="display:inline"
+                                                  class="d-inline"
                                                   onsubmit="return confirm('Supprimer cette description ?');">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ d.id) }}">
-                                                <button class="btn btn-danger btn-icon" title="Supprimer" aria-label="Supprimer">
-                                                    <i class="ki-outline ki-trash"></i>
+                                                <button class="btn btn-icon btn-danger" title="Supprimer" aria-label="Supprimer">
+                                                    <i class="ki-outline ki-trash fs-3"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -217,9 +193,8 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+    {# DataTables (bundle local Saul) #}
+    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
     <script>
         (function () {
             const fr = {
@@ -234,16 +209,22 @@
                 "sZeroRecords":"Aucun résultat trouvé",
                 "oPaginate":{"sFirst":"Premier","sLast":"Dernier","sNext":"Suivant","sPrevious":"Précédent"}
             };
-            $(function () {
-                $('#descriptionTable').DataTable({
+
+            document.addEventListener('DOMContentLoaded', function () {
+                // jQuery est fourni par plugins.bundle.js (Saul). Si non injecté globalement, le rajouter côté layout.
+                const $table = window.jQuery && window.jQuery('#descriptionTable');
+                if (!$table) return;
+
+                $table.DataTable({
                     language: fr,
                     pageLength: 25,
                     order: [[0, 'asc']],
                     responsive: true,
+                    autoWidth: false,
                     columnDefs: [
-                        { targets: [0,1,2,3,4,5,6,7,-1], className: 'text-center' }, // tout centré
-                        { targets: -1, orderable: false },
-                        { targets: 7, type: 'num' } // report tri numérique
+                        { targets: [2,3,4,5,6], className: 'text-center' },
+                        { targets: -1, orderable: false, className: 'text-end' },
+                        { targets: 7, type: 'num' }
                     ]
                 });
             });
