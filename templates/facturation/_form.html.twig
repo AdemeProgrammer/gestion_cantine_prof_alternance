@@ -1,35 +1,4 @@
-{# templates/facturation/_form.html.twig #}
 {{ form_start(form) }}
-<div class="row">
-    <div class="col-md-6 mb-3">
-        {{ form_row(form.mois) }}
-    </div>
-    <div class="col-md-6 mb-3">
-        {{ form_row(form.refProfesseur) }}
-    </div>
-
-    <div class="col-md-4 mb-3">
-        {{ form_row(form.nb_repas) }}
-    </div>
-    <div class="col-md-4 mb-3">
-        {{ form_row(form.montant_total) }}
-    </div>
-    <div class="col-md-4 mb-3">
-        {{ form_row(form.montant_regle) }}
-    </div>
-
-    <div class="col-md-4 mb-3">
-        {{ form_row(form.montant_restant) }}
-    </div>
-    <div class="col-md-4 mb-3">
-        {{ form_row(form.report_m_1) }}
-    </div>
-    <div class="col-md-4 mb-3">
-        {{ form_row(form.statut) }}
-    </div>
-</div>
-
-<button class="btn btn-primary mt-3">
-    {{ button_label|default('Enregistrer') }}
-</button>
+    {{ form_widget(form) }}
+    <button class="btn">{{ button_label|default('Save') }}</button>
 {{ form_end(form) }}

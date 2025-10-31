@@ -1,17 +1,13 @@
-{# templates/facturation/edit.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier facturation{% endblock %}
+{% block title %}Edit Facturation{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
-        <h1>Modifier la facturation</h1>
+    <h1>Edit Facturation</h1>
 
-        {% include 'facturation/_form.html.twig' with {'form': form, 'button_label': 'Mettre à jour'} %}
+    {{ include('facturation/_form.html.twig', {'button_label': 'Update'}) }}
 
-        {{ include('facturation/_delete_form.html.twig') }}
+    <a href="{{ path('app_facturation_index') }}">back to list</a>
 
-        <a href="{{ path('app_facturation_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
-    </div>
+    {{ include('facturation/_delete_form.html.twig') }}
 {% endblock %}
-

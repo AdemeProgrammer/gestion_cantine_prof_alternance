@@ -1,50 +1,50 @@
-{# templates/facturation/show.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Détail de la facturation{% endblock %}
+{% block title %}Facturation{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
-        <h1>Détails de la facturation #{{ facturation.id }}</h1>
+    <h1>Facturation</h1>
 
-        <table class="table table-bordered">
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ facturation.id }}</td>
+            </tr>
             <tr>
                 <th>Mois</th>
                 <td>{{ facturation.mois }}</td>
             </tr>
             <tr>
-                <th>Professeur</th>
-                <td>{{ facturation.refProfesseur ? facturation.refProfesseur.nom : '' }}</td>
-            </tr>
-            <tr>
-                <th>Nombre de repas</th>
-                <td>{{ facturation.nbRepas }}</td>
-            </tr>
-            <tr>
-                <th>Montant total (€)</th>
+                <th>Montant_total</th>
                 <td>{{ facturation.montantTotal }}</td>
             </tr>
             <tr>
-                <th>Montant réglé (€)</th>
+                <th>Montant_regle</th>
                 <td>{{ facturation.montantRegle }}</td>
             </tr>
             <tr>
-                <th>Montant restant (€)</th>
+                <th>Montant_restant</th>
                 <td>{{ facturation.montantRestant }}</td>
             </tr>
             <tr>
-                <th>Report M-1</th>
-                <td>{{ facturation.reportM1 }}</td>
+                <th>Statut</th>
+                <td>{{ facturation.statut }}</td>
             </tr>
             <tr>
-                <th>Statut</th>
-                <td>{{ facturation.statut ? facturation.statut.value : '' }}</td>
+                <th>Nb_repas</th>
+                <td>{{ facturation.nbRepas }}</td>
             </tr>
-        </table>
+            <tr>
+                <th>Report_m_1</th>
+                <td>{{ facturation.reportM1 }}</td>
+            </tr>
+        </tbody>
+    </table>
 
-        <a href="{{ path('app_facturation_edit', {'id': facturation.id}) }}" class="btn btn-warning">Modifier</a>
-        <a href="{{ path('app_facturation_index') }}" class="btn btn-secondary">Retour à la liste</a>
+    <a href="{{ path('app_facturation_index') }}">back to list</a>
 
-        {{ include('facturation/_delete_form.html.twig') }}
-    </div>
+    <a href="{{ path('app_facturation_edit', {'id': facturation.id}) }}">edit</a>
+
+    {{ include('facturation/_delete_form.html.twig') }}
 {% endblock %}
