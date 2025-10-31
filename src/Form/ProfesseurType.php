@@ -17,7 +17,6 @@ class ProfesseurType extends AbstractType
             ->add('email')
             ->add('est_actif')
             ->add('code_compta')
-            ->add('prixU')
         ;
     }
 

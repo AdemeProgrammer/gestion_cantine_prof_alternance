@@ -55,9 +55,6 @@ class Professeur
     #[ORM\OneToMany(targetEntity: Repas::class, mappedBy: 'Professeur')]
     private Collection $repas;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
-    private ?string $prix_u = null;
-
     public function __construct()
     {
         $this->facturations = new ArrayCollection();
@@ -251,17 +248,6 @@ class Professeur
     {
         return $this->prenom . ' ' . $this->nom;
     }
-
-    public function getPrixU(): ?string
-    {
-        return $this->prix_u;
-    }
-
-    public function setPrixU(string $prix_u): static
-    {
-        $this->prix_u = $prix_u;
-
-        return $this;
-    }
 }
+
 

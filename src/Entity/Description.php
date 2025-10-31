@@ -39,6 +39,9 @@ class Description
     #[ORM\ManyToOne(inversedBy: 'descriptions')]
     private ?Promo $refPromo = null;
 
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    private ?string $prix_u = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -136,6 +139,18 @@ class Description
     public function setRefPromo(?Promo $refPromo): static
     {
         $this->refPromo = $refPromo;
+
+        return $this;
+    }
+
+    public function getPrixU(): ?string
+    {
+        return $this->prix_u;
+    }
+
+    public function setPrixU(string $prix_u): static
+    {
+        $this->prix_u = $prix_u;
 
         return $this;
     }

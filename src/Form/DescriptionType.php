@@ -34,7 +34,9 @@ class DescriptionType extends AbstractType
                     return $promo->getAnneeDebut() . ' - ' . $promo->getAnneeFin();
                 },
                 'placeholder' => 'Sélectionner une promotion',
-            ]);
+            ])
+            ->add('prix_u')
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
