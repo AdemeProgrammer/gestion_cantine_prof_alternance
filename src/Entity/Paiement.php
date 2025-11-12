@@ -25,7 +25,8 @@ class Paiement
     private ?MoyenPaiement $moyen_paiement = null;
 
     #[ORM\ManyToOne(inversedBy: 'paiements')]
-    private ?Professeur $refProfesseur = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Description $ref_description_id = null;
 
     public function getId(): ?int
     {
@@ -68,15 +69,16 @@ class Paiement
         return $this;
     }
 
-    public function getRefProfesseur(): ?Professeur
+    public function getRefDescriptionId(): ?Description
     {
-        return $this->refProfesseur;
+        return $this->ref_description_id;
     }
 
-    public function setRefProfesseur(?Professeur $refProfesseur): static
+    public function setRefDescriptionId(?Description $ref_description_id): static
     {
-        $this->refProfesseur = $refProfesseur;
+        $this->ref_description_id = $ref_description_id;
 
         return $this;
     }
 }
+
