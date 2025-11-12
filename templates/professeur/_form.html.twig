@@ -25,12 +25,6 @@
     {{ form_errors(form.code_compta) }}
 </div>
 
-<div class="mb-3">
-    {{ form_label(form.prixU, 'Prix unitaire', {'label_attr': {'class': 'form-label'}}) }}
-    {{ form_widget(form.prixU, {'attr': {'class': 'form-control'}}) }}
-    {{ form_errors(form.prixU) }}
-</div>
-
 <button class="btn btn-primary">
     {{ button_label|default('Enregistrer') }}
 </button>

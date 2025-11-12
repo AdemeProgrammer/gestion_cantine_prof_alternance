@@ -27,7 +27,7 @@
                 <td>{{ facturation.montantTotal }}</td>
                 <td>{{ facturation.montantRegle }}</td>
                 <td>{{ facturation.montantRestant }}</td>
-                <td>{{ facturation.statut }}</td>
+                <td>{{ facturation.statut ? facturation.statut.value : '' }}</td>
                 <td>{{ facturation.nbRepas }}</td>
                 <td>{{ facturation.reportM1 }}</td>
                 <td>

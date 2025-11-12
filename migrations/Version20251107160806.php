@@ -70,7 +70,7 @@ BEGIN
                       THEN NEW.report ELSE 0 END), 2)           AS montant_restant,
         (CASE WHEN SUBSTRING(M.mois, 6, 2) = '09'
               THEN NEW.report ELSE 0 END)                       AS report_m_1,
-        'EN_ATTENTE'                                            AS statut
+        'En attente'                                          AS statut
     FROM
         (
             /* Mois de l’année scolaire présents dans calendrier (hors août) */
