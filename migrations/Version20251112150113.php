@@ -11,7 +11,7 @@ final class Version20251112150113 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Triggers: (1) AFTER INSERT ON description => seed repas + seed facturation, (2) AFTER INSERT ON repas => MAJ facturation, (3) AFTER DELETE ON repas => MAJ facturation. Collations harmonisées.';
+        return 'Triggers: (1) AFTER INSERT ON description => seed repas + seed facturation, (2) AFTER INSERT ON repas => MAJ facturation, (3) AFTER DELETE ON repas => MAJ facturation, (4) AFTER INSERT ON paiement => répartition du paiement sur les factures. Collations harmonisées.';
     }
 
     public function up(Schema $schema): void
@@ -23,7 +23,6 @@ CREATE TRIGGER trg_repas_on_description_insert
 AFTER INSERT ON description
 FOR EACH ROW
 BEGIN
-    /* Étape A : seed des repas (d’après ton trigger d’origine) */
     INSERT INTO repas (ref_calendrier_id, professeur_id, est_consomme)
     SELECT
         c.id,
@@ -46,7 +45,6 @@ BEGIN
               AND r.professeur_id     = NEW.ref_professeur_id
       );
 
-    /* Étape B : facturations à partir des REPAS réellement présents (collations unifiées) */
     INSERT INTO facturation (
         ref_professeur_id,
         mois,
@@ -230,11 +228,79 @@ BEGIN
     END IF;
 END
 SQL);
+
+        /* --------- 4) Trigger AFTER INSERT ON paiement => répartition du paiement sur les factures du prof --------- */
+        $this->addSql("DROP TRIGGER IF EXISTS trg_paiement_after_insert");
+        $this->addSql(<<<'SQL'
+CREATE TRIGGER trg_paiement_after_insert
+AFTER INSERT ON paiement
+FOR EACH ROW
+BEGIN
+    DECLARE v_prof_id INT;
+    DECLARE v_montant_rest DECIMAL(10,2);
+    DECLARE v_fact_id INT;
+    DECLARE v_fact_restant DECIMAL(10,2);
+
+    /* Professeur lié à la description portée par le paiement */
+    SELECT d.ref_professeur_id
+      INTO v_prof_id
+    FROM description d
+    WHERE d.id = NEW.ref_description_id_id
+    LIMIT 1;
+
+    SET v_montant_rest = NEW.montant;
+
+    IF v_prof_id IS NOT NULL AND v_montant_rest > 0 THEN
+
+        paiement_loop: WHILE v_montant_rest > 0 DO
+
+            SET v_fact_id = NULL;
+            SET v_fact_restant = 0;
+
+            /* Plus ancienne facture du prof encore partiellement impayée */
+            SELECT f.id, f.montant_restant
+              INTO v_fact_id, v_fact_restant
+            FROM facturation f
+            WHERE f.ref_professeur_id = v_prof_id
+              AND f.montant_restant > 0
+              AND f.statut = 'En attente'
+            ORDER BY f.mois ASC
+            LIMIT 1;
+
+            IF v_fact_id IS NULL OR v_fact_restant IS NULL OR v_fact_restant <= 0 THEN
+                LEAVE paiement_loop;
+            END IF;
+
+            IF v_montant_rest >= v_fact_restant THEN
+                /* Le paiement solde entièrement la facture */
+                UPDATE facturation f
+                SET f.montant_regle   = ROUND(f.montant_regle + v_fact_restant, 2),
+                    f.montant_restant = 0.00,
+                    f.statut          = 'Payé'
+                WHERE f.id = v_fact_id;
+
+                SET v_montant_rest = ROUND(v_montant_rest - v_fact_restant, 2);
+            ELSE
+                /* Le paiement ne couvre qu’une partie de la facture */
+                UPDATE facturation f
+                SET f.montant_regle   = ROUND(f.montant_regle + v_montant_rest, 2),
+                    f.montant_restant = ROUND(f.montant_restant - v_montant_rest, 2)
+                WHERE f.id = v_fact_id;
+
+                SET v_montant_rest = 0.00;
+            END IF;
+
+        END WHILE paiement_loop;
+
+    END IF;
+END
+SQL);
     }
 
     public function down(Schema $schema): void
     {
-        /* Supprime les 2 triggers de mise à jour live */
+        /* Supprime les triggers de mise à jour live */
+        $this->addSql("DROP TRIGGER IF EXISTS trg_paiement_after_insert");
         $this->addSql("DROP TRIGGER IF EXISTS trg_fact_after_insert_repas");
         $this->addSql("DROP TRIGGER IF EXISTS trg_fact_after_delete_repas");
 
