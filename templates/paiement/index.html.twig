@@ -21,7 +21,7 @@
                 <td>{{ paiement.id }}</td>
                 <td>{{ paiement.datePaiement ? paiement.datePaiement|date('Y-m-d H:i:s') : '' }}</td>
                 <td>{{ paiement.montant }}</td>
-                <td>{{ paiement.moyenPaiement }}</td>
+                <td>{{ paiement.moyenPaiement.value }}</td>
                 <td>
                     <a href="{{ path('app_paiement_show', {'id': paiement.id}) }}">show</a>
                     <a href="{{ path('app_paiement_edit', {'id': paiement.id}) }}">edit</a>
