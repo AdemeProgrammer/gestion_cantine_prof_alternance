@@ -1,4 +1,4 @@
-{# templates/description/_form.html.twig #}
+{% import('_macros/form.html.twig') as _form_input %}
 {{ form_start(form, {'attr': {'class': 'card shadow-sm p-4 mb-4'}}) }}
 
 {# Cases à cocher pour les jours et report : en gros ici, j'ai rajouté report dans la boucle des jours car il ne fonctionnait pas en dehors
@@ -14,11 +14,7 @@ et je n'ai pas réussi à trouver d'autres solutions#}
 {% endfor %}
 
 {# Professeur est lié avec ref_professeur_id et Promo avec ref_promo_id #}
-<div class="mb-3">
-    {{ form_label(form.refProfesseur) }}
-    {{ form_widget(form.refProfesseur, {'attr': {'class': 'form-select'}}) }}
-    {{ form_errors(form.refProfesseur) }}
-</div>
+{{ _form_input.input_select(form.refProfesseur) }}
 
 <div class="mb-3">
     {{ form_label(form.refPromo) }}

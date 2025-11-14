@@ -47,7 +47,6 @@
                                 <th class="text-center w-50px">Me</th>
                                 <th class="text-center w-50px">J</th>
                                 <th class="text-center w-50px">V</th>
-                                <th>Report</th>
                                 <th class="text-end min-w-175px">Actions</th>
                             </tr>
                             </thead>
@@ -88,10 +87,6 @@
                                 {% set Me = d.mercredi ? 1 : 0 %}
                                 {% set J  = d.jeudi    ? 1 : 0 %}
                                 {% set V  = d.vendredi ? 1 : 0 %}
-
-                                {# report #}
-                                {% set reportVal = d.report ?? '' %}
-                                {% set reportDisplay = reportVal is same as('') ? '—' : (reportVal|number_format(2, ',', ' ')) ~ ' €' %}
 
                                 <tr>
                                     <td class="fw-semibold">{{ profTxt }}</td>
@@ -152,10 +147,6 @@
                                         {% else %}
                                             <i class="ki-outline ki-minus fs-3 text-gray-400"></i>
                                         {% endif %}
-                                    </td>
-
-                                    <td data-order="{{ reportVal is same as('') ? '' : reportVal|replace({',':'.'}) }}">
-                                        {{ reportDisplay }}
                                     </td>
 
                                     <td class="text-end">
@@ -222,12 +213,12 @@
                     responsive: true,
                     autoWidth: false,
                     columnDefs: [
-                        { targets: [2,3,4,5,6], className: 'text-center' },
-                        { targets: -1, orderable: false, className: 'text-end' },
-                        { targets: 7, type: 'num' }
+                        { targets: [2,3,4,5,6], className: 'text-center', type: 'num' },
+                        { targets: -1, orderable: false, className: 'text-end' }
                     ]
                 });
             });
         })();
     </script>
 {% endblock %}
+

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Description;
+use App\Entity\Professeur;
 use App\Form\DescriptionType;
 use App\Repository\DescriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -30,7 +31,12 @@ final class DescriptionController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($description);
+            /** @var Professeur $professeur */
+            foreach ($form->get("refProfesseur")->getData() as $professeur) {
+                $descriptionClone = clone $description;
+                $descriptionClone->setRefProfesseur($professeur);
+                $entityManager->persist($descriptionClone);
+            }
             $entityManager->flush();
 
             return $this->redirectToRoute('app_description_index', [], Response::HTTP_SEE_OTHER);

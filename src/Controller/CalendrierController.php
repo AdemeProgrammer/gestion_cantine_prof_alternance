@@ -197,8 +197,7 @@ final class CalendrierController extends AbstractController
             if (!$repas) {
                 $repas = (new Repas())
                     ->setRefCalendrier($cal)
-                    ->setProfesseur($prof)
-                    ->setEstConsomme(false);
+                    ->setProfesseur($prof);
                 $em->persist($repas);
             }
         } else {

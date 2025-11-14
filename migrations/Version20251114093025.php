@@ -7,7 +7,7 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-final class Version20251112150113 extends AbstractMigration
+final class Version20251114093025 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -23,11 +23,10 @@ CREATE TRIGGER trg_repas_on_description_insert
 AFTER INSERT ON description
 FOR EACH ROW
 BEGIN
-    INSERT INTO repas (ref_calendrier_id, professeur_id, est_consomme)
+    INSERT INTO repas (ref_calendrier_id, professeur_id)
     SELECT
         c.id,
-        NEW.ref_professeur_id,
-        0
+        NEW.ref_professeur_id
     FROM calendrier c
     WHERE c.ref_promo_id = NEW.ref_promo_id
       AND TRIM(UPPER(c.type_jour) COLLATE utf8mb4_unicode_ci) IN ('SEMAINE','COURS')

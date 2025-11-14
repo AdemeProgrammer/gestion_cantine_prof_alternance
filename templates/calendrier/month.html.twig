@@ -4,7 +4,7 @@
 {% block title %}Mois — {{ firstOfMonth|date('F Y', 'Europe/Paris')|capitalize }}{% endblock %}
 {% block titre_page %}{{ firstOfMonth|date('F Y', 'Europe/Paris')|capitalize }}{% endblock %}
 {% block action_page %}
-    
+
 {% endblock %}
 {% block Breadcrumb %}
     {{ _breadcumb.etape("Promotion") }}
@@ -119,11 +119,15 @@
                         const data = await res.json();
                         if (!res.ok || !data.ok) {
                             box.checked = !box.checked; // rollback
-                            alert('Enregistrement impossible' + (data.error ? ' (' + data.error + ')' : ''));
+                            console.log('Enregistrement impossible' + (data.error ? ' (' + data.error + ')' : ''));
+                            toastr.error('Enregistrement impossible' + (data.error ? ' (' + data.error + ')' : ''));
+                        }else{
+                            toastr.success("La modification a bien été prise en compte.")
                         }
                     } catch (err) {
                         box.checked = !box.checked; // rollback
-                        alert('Erreur réseau, réessaie.');
+                        console.log('Erreur réseau, réessaie.');
+                        toastr.error('Erreur réseau, réessaie.');
                     }
                 });
             });

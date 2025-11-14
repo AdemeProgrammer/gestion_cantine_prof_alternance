@@ -23,7 +23,7 @@ class RepasRepository extends ServiceEntityRepository
         }
 
         return $this->createQueryBuilder('r')
-            ->select('IDENTITY(r.refCalendrier) AS calId, IDENTITY(r.Professeur) AS profId, r.est_consomme AS consomme')
+            ->select('IDENTITY(r.refCalendrier) AS calId, IDENTITY(r.Professeur) AS profId')
             ->andWhere('IDENTITY(r.refCalendrier) IN (:cals)')
             ->andWhere('IDENTITY(r.Professeur) IN (:profs)')
             ->setParameter('cals', $calendarIds)

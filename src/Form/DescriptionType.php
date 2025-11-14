@@ -20,12 +20,13 @@ class DescriptionType extends AbstractType
             ->add('mercredi')
             ->add('jeudi')
             ->add('vendredi')
-            ->add('report')
             ->add('refProfesseur', EntityType::class, [
                 'class' => Professeur::class,
                 'choice_label' => function(Professeur $prof) {
                     return $prof->getNom() . ' ' . $prof->getPrenom(); // Pour faire simple, ici ça permet d'afficher le nom et le prénom des profs au lieu d'afficher leur ID. C'est bien mieux visuellement parlant et ça simplifie grandement le travail.
                 },
+                'mapped' => false,
+                'multiple' => true,
                 'placeholder' => 'Sélectionner un professeur',
             ])
             ->add('refPromo', EntityType::class, [

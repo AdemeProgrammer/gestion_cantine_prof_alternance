@@ -31,8 +31,8 @@ class Description
     #[ORM\Column]
     private ?bool $vendredi = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $report = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $report = '0';
 
     #[ORM\ManyToOne(inversedBy: 'descriptions')]
     #[ORM\JoinColumn(nullable: false)]

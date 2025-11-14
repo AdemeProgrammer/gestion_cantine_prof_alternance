@@ -27,9 +27,11 @@ final class ProfesseurController extends AbstractController
     {
         $professeur = new Professeur();
         $form = $this->createForm(ProfesseurType::class, $professeur);
+        $form->remove('est_actif');
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $professeur->setEstActif(true);
             $entityManager->persist($professeur);
             $entityManager->flush();
 
