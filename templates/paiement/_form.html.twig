@@ -1,4 +1,19 @@
+{% import "_macros/form.html.twig" as _form_input %}
+
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+
+{% for formField in form %}
+    {% if "hidden" in formField.vars.block_prefixes %}
+        {{ form_widget(formField) }}
+    {% elseif formField.vars.choices is defined %}
+        {{ _form_input.input_select(formField) }}
+    {% elseif formField.vars.checked is defined %}
+        {{ _form_input.input_ligne(formField,false) }}
+    {% else %}
+        {{ _form_input.input_ligne(formField) }}
+    {% endif %}
+{% endfor %}
+<div class="form-floating mb-3">
+    <button class="btn btn-primary mt-2 col-4">{{ button_label|default('Sauvegarder') }}</button>
+</div>
 {{ form_end(form) }}
