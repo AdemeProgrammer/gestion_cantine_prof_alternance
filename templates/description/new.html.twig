@@ -1,7 +1,13 @@
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
-{% block title %}Créer une description{% endblock %}
+{% block title %}Promotion{% endblock %}
+{% block titre_page %}Creer une nouvelle description{% endblock %}
 
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Description") }}
+    {{ _breadcumb.etape("Accueil") }}
+{% endblock %}
 {% block body %}
     <h1>Créer une description</h1>
 

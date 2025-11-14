@@ -1,8 +1,15 @@
 {# templates/promo/index.html.twig #}
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
-{% block title %}Promotions{% endblock %}
+{% block title %}Professeur{% endblock %}
+{% block titre_page %}Liste des promotions{% endblock %}
+{% block action_page %}
+{% endblock %}
 
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Promotion") }}
+{% endblock %}
 {% block stylesheets %}
     <style>
         .card-dashed { border: 2px dashed rgba(0,0,0,.1) !important; }

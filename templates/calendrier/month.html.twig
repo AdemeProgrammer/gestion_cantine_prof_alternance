@@ -4,7 +4,7 @@
 {% block title %}Mois — {{ firstOfMonth|date('F Y', 'Europe/Paris')|capitalize }}{% endblock %}
 {% block titre_page %}{{ firstOfMonth|date('F Y', 'Europe/Paris')|capitalize }}{% endblock %}
 {% block action_page %}
-
+    <a href="{{ path('app_description_new') }}" class="btn btn-primary">Lier un nouveau professeur</a>
 {% endblock %}
 {% block Breadcrumb %}
     {{ _breadcumb.etape("Promotion") }}
