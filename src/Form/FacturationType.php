@@ -23,7 +23,6 @@ class FacturationType extends AbstractType
             ->add('report_m_1')
             ->add('refProfesseur', EntityType::class, [
                 'class' => Professeur::class,
-                'choice_label' => 'id',
             ])
         ;
     }
