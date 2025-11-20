@@ -4,6 +4,7 @@
 {% block title %}Calendrier — {{ promo.anneeDebut }}-{{ promo.anneeFin }}{% endblock %}
 {% block titre_page %}{{ promo.anneeDebut }}-{{ promo.anneeFin }}{% endblock %}
 {% block action_page %}
+    <a href="{{ path('app_description_new',{ 'id':promo.id}) }}" class="btn btn-primary">Lier un nouveau professeur</a>
 
 {% endblock %}
 {% block Breadcrumb %}

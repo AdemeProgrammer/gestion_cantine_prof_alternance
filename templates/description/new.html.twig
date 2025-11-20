@@ -2,16 +2,13 @@
 {% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
 {% block title %}Promotion{% endblock %}
-{% block titre_page %}Creer une nouvelle description{% endblock %}
+{% block titre_page %}Créer une nouvelle description pour la promotion {{ promo.anneeDebut }} -  {{ promo.anneeFin }}{% endblock %}
 
 {% block Breadcrumb %}
-    {{ _breadcumb.etape("Description") }}
-    {{ _breadcumb.etape("Accueil") }}
+    {{ _breadcumb.etape("Promotion") }}
+    {{ _breadcumb.etape("Nouvelle Description") }}
 {% endblock %}
 {% block body %}
-    <h1>Créer une description</h1>
-
     {{ include('description/_form.html.twig') }}
-
-    <a href="{{ path('app_description_index') }}">Revenir à la liste des descriptions</a>
+    <a href="{{ path('app_description_index') }}">Retour</a>
 {% endblock %}

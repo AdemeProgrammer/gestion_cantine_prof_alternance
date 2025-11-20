@@ -1,9 +1,18 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouvelle promotion{% endblock %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
+{% block title %}Nouvelle Promotion{% endblock %}
+{% block titre_page %}Nouvelle Promotion{% endblock %}
+{% block action_page %}
+{% endblock %}
+
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Promotion") }}
+    {{ _breadcumb.etape("Nouvelle Promotion") }}
+
+{% endblock %}
 {% block body %}
-    <h1>Créer une nouvelle promotion</h1>
 
     {{ include('promo/_form.html.twig') }}
 

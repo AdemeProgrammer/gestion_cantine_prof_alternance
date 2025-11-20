@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Description;
 use App\Entity\Professeur;
+use App\Entity\Promo;
 use App\Form\DescriptionType;
 use App\Repository\DescriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,8 +24,8 @@ final class DescriptionController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_description_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}/new', name: 'app_description_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager, Promo $promo): Response
     {
         $description = new Description();
         $form = $this->createForm(DescriptionType::class, $description);
@@ -34,6 +35,7 @@ final class DescriptionController extends AbstractController
             /** @var Professeur $professeur */
             foreach ($form->get("refProfesseur")->getData() as $professeur) {
                 $descriptionClone = clone $description;
+                $descriptionClone->setRefPromo($promo);
                 $descriptionClone->setRefProfesseur($professeur);
                 $entityManager->persist($descriptionClone);
             }
@@ -44,6 +46,7 @@ final class DescriptionController extends AbstractController
 
         return $this->render('description/new.html.twig', [
             'description' => $description,
+            'promo' => $promo,
             'form' => $form,
         ]);
     }
