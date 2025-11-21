@@ -5,100 +5,152 @@
 {% block body %}
     <div class="container mt-4">
 
-        <!-- Informations du professeur -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body d-flex align-items-center">
-                <div class="flex-fill">
-                    <h4 class="mb-1">{{ professeur.prenom }} {{ professeur.nom }}</h4>
-                    <p class="mb-1">{{ professeur.email }}</p>
-                    <p class="mb-1">
-                        Code compta: {{ professeur.codeCompta is not null ? professeur.codeCompta : 'N/A' }}
-                    </p>
-                    <p class="mb-1">
-                        Actif: {{ professeur.estActif ? 'Oui' : 'Non' }}
-                    </p>
+        <div class="row g-4">
+
+            <!-- Colonne gauche : Infos du prof -->
+            <div class="col-md-3">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Infos Professeur</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Nom :</strong> {{ professeur.prenom }} {{ professeur.nom }}</p>
+                        <p><strong>Email :</strong> {{ professeur.email }}</p>
+                        <p><strong>Code compta :</strong> {{ professeur.codeCompta is not null ? professeur.codeCompta : 'N/A' }}</p>
+                        <p><strong>Actif :</strong> {{ professeur.estActif ? 'Oui' : 'Non' }}</p>
+                        <a href="{{ path('app_professeur_edit', { id: professeur.id }) }}" class="btn btn-primary btn-sm mt-2">
+                            Modifier
+                        </a>
+                    </div>
                 </div>
-                <a href="{{ path('app_professeur_edit', { id: professeur.id }) }}" class="btn btn-primary">
-                    Modifier
-                </a>
             </div>
-        </div>
 
+            <!-- Colonne droite : Promotions et facturations -->
+            <div class="col-md-9">
 
-        <!-- Promotions -->
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0">Promotions</h5>
-            </div>
-            <div class="card-body">
-                {% set sortedPromos = promotions|sort((a, b) => b.anneeDebut <=> a.anneeDebut) %}
-                {% set lastThree = sortedPromos|slice(0, 3) %}
-                {% set otherPromos = sortedPromos|slice(3) %}
+                <!-- Onglets Promotions -->
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Promotions</h5>
+                    </div>
+                    <div class="card-body">
+                        {% set sortedPromos = promotions|sort((a,b) => b.anneeDebut <=> a.anneeDebut) %}
 
-                <!-- NAV TABS -->
-                <ul class="nav nav-tabs" id="promoTabs" role="tablist">
-                    {% for promo in lastThree %}
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link {% if loop.first %}active{% endif %}"
-                               data-bs-toggle="tab"
-                               href="#promo_{{ promo.id }}"
-                               role="tab">
-                                {{ promo.anneeLabel }}
-                            </a>
-                        </li>
-                    {% endfor %}
+                        <ul class="nav nav-tabs" id="promoTabs" role="tablist">
+                            {% for promo in sortedPromos %}
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link {% if loop.first %}active{% endif %}"
+                                       data-bs-toggle="tab" href="#promo_{{ promo.id }}" role="tab">
+                                        {{ promo.anneeLabel }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
 
-                    {% if otherPromos|length > 0 %}
-                        <li class="nav-item dropdown" role="presentation">
-                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
-                                Autres
-                            </a>
-                            <ul class="dropdown-menu">
-                                {% for promo in otherPromos %}
-                                    <li>
-                                        <a class="dropdown-item" data-bs-toggle="tab" href="#promo_{{ promo.id }}">
-                                            {{ promo.anneeLabel }}
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </li>
-                    {% endif %}
-                </ul>
+                        <div class="tab-content mt-3">
+                            {% for promo in sortedPromos %}
+                                <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="promo_{{ promo.id }}" role="tabpanel">
 
-                <!-- CONTENT TABS -->
-                <div class="tab-content mt-3">
-                    {% for promo in sortedPromos %}
-                        <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
-                             id="promo_{{ promo.id }}"
-                             role="tabpanel">
-                            <h5 class="mb-3">Descriptions de la promotion {{ promo.anneeLabel }}</h5>
+                                    <!-- Descriptions -->
+                                    <div class="card mb-3">
+                                        <div class="card-header">Descriptions</div>
+                                        <div class="card-body">
+                                            {% if promo.descriptions|length > 0 %}
+                                                {% for description in promo.descriptions %}
+                                                    <div class="border rounded p-2 mb-2">
+                                                        <p><strong>ID :</strong> {{ description.id }}</p>
+                                                        <p><strong>Prix unitaire :</strong> {{ description.prixU }}</p>
+                                                        <p><strong>Report :</strong> {{ description.report }}</p>
+                                                        <p><strong>Jours activés :</strong>
+                                                            {% if description.lundi %} Lundi {% endif %}
+                                                            {% if description.mardi %} Mardi {% endif %}
+                                                            {% if description.mercredi %} Mercredi {% endif %}
+                                                            {% if description.jeudi %} Jeudi {% endif %}
+                                                            {% if description.vendredi %} Vendredi {% endif %}
+                                                        </p>
 
-                            {% if promo.descriptions|length > 0 %}
-                                <div class="list-group">
-                                    {% for description in promo.descriptions %}
-                                        <div class="list-group-item mb-2">
-                                            <p><strong>ID :</strong> {{ description.id }}</p>
-                                            <p><strong>Professeur :</strong> {{ description.refProfesseur ? description.refProfesseur.nom : 'N/A' }}</p>
-                                            <p><strong>Prix unitaire :</strong> {{ description.prixU }}</p>
-                                            <p><strong>Report :</strong> {{ description.report }}</p>
-                                            <p><strong>Jours activés :</strong>
-                                                {% if description.lundi %} Lundi {% endif %}
-                                                {% if description.mardi %} Mardi {% endif %}
-                                                {% if description.mercredi %} Mercredi {% endif %}
-                                                {% if description.jeudi %} Jeudi {% endif %}
-                                                {% if description.vendredi %} Vendredi {% endif %}
-                                            </p>
+                                                        <!-- Paiements -->
+                                                        {% if description.paiements|length > 0 %}
+                                                            <div class="card mt-2">
+                                                                <div class="card-header">
+                                                                    Paiements
+                                                                </div>
+                                                                <div class="card-body p-2">
+                                                                    <table class="table table-sm table-bordered mb-0">
+                                                                        <thead>
+                                                                        <tr>
+                                                                            <th>Date</th>
+                                                                            <th>Montant</th>
+                                                                            <th>Moyen</th>
+                                                                        </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                        {% for paiement in description.paiements %}
+                                                                            <tr>
+                                                                                <td>{{ paiement.datePaiement ? paiement.datePaiement|date('d/m/Y') : 'N/A' }}</td>
+                                                                                <td>{{ paiement.montant }}</td>
+                                                                                <td>{{ paiement.moyenPaiement ? paiement.moyenPaiement.value : 'N/A' }}</td>
+                                                                            </tr>
+                                                                        {% endfor %}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        {% else %}
+                                                            <p class="text-muted mt-1">Aucun paiement pour cette description.</p>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <p class="text-muted">Aucune description enregistrée pour cette promotion.</p>
+                                            {% endif %}
                                         </div>
-                                    {% endfor %}
+                                    </div>
                                 </div>
-                            {% else %}
-                                <p class="text-muted">Aucune description enregistrée pour cette promotion.</p>
-                            {% endif %}
+                            {% endfor %}
                         </div>
-                    {% endfor %}
+                    </div>
                 </div>
+
+                <!-- Facturations -->
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0">Facturations</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if professeur.facturations|length > 0 %}
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                <tr>
+                                    <th>Mois</th>
+                                    <th>Montant total</th>
+                                    <th>Montant réglé</th>
+                                    <th>Montant restant</th>
+                                    <th>Nombre de repas</th>
+                                    <th>Statut</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for f in professeur.facturations %}
+                                    <tr>
+                                        <td>{{ f.mois }}</td>
+                                        <td>{{ f.montantTotal }}</td>
+                                        <td>{{ f.montantRegle }}</td>
+                                        <td>{{ f.montantRestant }}</td>
+                                        <td>{{ f.nbRepas }}</td>
+                                        <td>{{ f.statut ? f.statut.value : 'N/A' }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p class="text-muted">Aucune facturation enregistrée pour ce professeur.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
             </div>
         </div>
+
     </div>
 {% endblock %}
