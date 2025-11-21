@@ -1,38 +1,104 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Les professurs{% endblock %}
+{% block title %}Fiche professeur{% endblock %}
 
 {% block body %}
-    <h1>Les professeurs</h1>
+    <div class="container mt-4">
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ professeur.id }}</td>
-            </tr>
-            <tr>
-                <th>Prenom</th>
-                <td>{{ professeur.prenom }}</td>
-            </tr>
-            <tr>
-                <th>Nom</th>
-                <td>{{ professeur.nom }}</td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td>{{ professeur.email }}</td>
-            </tr>
-            <tr>
-                <th>Est_actif</th>
-                <td>{{ professeur.estActif ? 'Yes' : 'No' }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <!-- Informations du professeur -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body d-flex align-items-center">
+                <div class="flex-fill">
+                    <h4 class="mb-1">{{ professeur.prenom }} {{ professeur.nom }}</h4>
+                    <p class="mb-1">{{ professeur.email }}</p>
+                    <p class="mb-1">
+                        Code compta: {{ professeur.codeCompta is not null ? professeur.codeCompta : 'N/A' }}
+                    </p>
+                    <p class="mb-1">
+                        Actif: {{ professeur.estActif ? 'Oui' : 'Non' }}
+                    </p>
+                </div>
+                <a href="{{ path('app_professeur_edit', { id: professeur.id }) }}" class="btn btn-primary">
+                    Modifier
+                </a>
+            </div>
+        </div>
 
-    <a href="{{ path('app_professeur_index') }}">Revenir à la liste des professeurs</a>
 
-    <a href="{{ path('app_professeur_edit', {'id': professeur.id}) }}">Modifier</a>
+        <!-- Promotions -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">Promotions</h5>
+            </div>
+            <div class="card-body">
+                {% set sortedPromos = promotions|sort((a, b) => b.anneeDebut <=> a.anneeDebut) %}
+                {% set lastThree = sortedPromos|slice(0, 3) %}
+                {% set otherPromos = sortedPromos|slice(3) %}
 
-    {{ include('professeur/_delete_form.html.twig') }}
+                <!-- NAV TABS -->
+                <ul class="nav nav-tabs" id="promoTabs" role="tablist">
+                    {% for promo in lastThree %}
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {% if loop.first %}active{% endif %}"
+                               data-bs-toggle="tab"
+                               href="#promo_{{ promo.id }}"
+                               role="tab">
+                                {{ promo.anneeLabel }}
+                            </a>
+                        </li>
+                    {% endfor %}
+
+                    {% if otherPromos|length > 0 %}
+                        <li class="nav-item dropdown" role="presentation">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
+                                Autres
+                            </a>
+                            <ul class="dropdown-menu">
+                                {% for promo in otherPromos %}
+                                    <li>
+                                        <a class="dropdown-item" data-bs-toggle="tab" href="#promo_{{ promo.id }}">
+                                            {{ promo.anneeLabel }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endif %}
+                </ul>
+
+                <!-- CONTENT TABS -->
+                <div class="tab-content mt-3">
+                    {% for promo in sortedPromos %}
+                        <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
+                             id="promo_{{ promo.id }}"
+                             role="tabpanel">
+                            <h5 class="mb-3">Descriptions de la promotion {{ promo.anneeLabel }}</h5>
+
+                            {% if promo.descriptions|length > 0 %}
+                                <div class="list-group">
+                                    {% for description in promo.descriptions %}
+                                        <div class="list-group-item mb-2">
+                                            <p><strong>ID :</strong> {{ description.id }}</p>
+                                            <p><strong>Professeur :</strong> {{ description.refProfesseur ? description.refProfesseur.nom : 'N/A' }}</p>
+                                            <p><strong>Prix unitaire :</strong> {{ description.prixU }}</p>
+                                            <p><strong>Report :</strong> {{ description.report }}</p>
+                                            <p><strong>Jours activés :</strong>
+                                                {% if description.lundi %} Lundi {% endif %}
+                                                {% if description.mardi %} Mardi {% endif %}
+                                                {% if description.mercredi %} Mercredi {% endif %}
+                                                {% if description.jeudi %} Jeudi {% endif %}
+                                                {% if description.vendredi %} Vendredi {% endif %}
+                                            </p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Aucune description enregistrée pour cette promotion.</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
