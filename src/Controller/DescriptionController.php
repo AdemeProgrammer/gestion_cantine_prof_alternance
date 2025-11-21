@@ -25,13 +25,32 @@ final class DescriptionController extends AbstractController
     }
 
     #[Route('/{id}/new', name: 'app_description_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, Promo $promo): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, Promo $promo, DescriptionRepository $descriptionRepository): Response
     {
         $description = new Description();
         $form = $this->createForm(DescriptionType::class, $description);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted()) {
+            $selectedProfs = $form->get('refProfesseur')->getData();
+            $duplicates = [];
+            foreach ($selectedProfs as $professeur) {
+                $existing = $descriptionRepository->findOneBy([
+                    'refPromo' => $promo,
+                    'refProfesseur' => $professeur,
+                ]);
+                if ($existing) {
+                    $duplicates[] = $professeur;
+                }
+            }
+
+            if (!empty($duplicates)) {
+                $names = array_map(fn($p) => $p->getNom() . ' ' . $p->getPrenom(), $duplicates);
+                $this->addFlash('danger', 'Cette description existe déjà pour: ' . implode(', ', $names));
+            }
+        }
+
+        if ($form->isSubmitted() && $form->isValid() && empty($duplicates)) {
             /** @var Professeur $professeur */
             foreach ($form->get("refProfesseur")->getData() as $professeur) {
                 $descriptionClone = clone $description;
@@ -41,7 +60,7 @@ final class DescriptionController extends AbstractController
             }
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_description_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('cal_summary', ['id' => $promo->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('description/new.html.twig', [
