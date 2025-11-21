@@ -47,8 +47,34 @@ final class ProfesseurController extends AbstractController
     #[Route('/{id}', name: 'app_professeur_show', methods: ['GET'])]
     public function show(Professeur $professeur): Response
     {
+        // On récupère toutes les descriptions liées au professeur
+        $descriptions = $professeur->getDescriptions();
+
+        // On extrait les promotions liées sans doublons
+        $promos = [];
+        foreach ($descriptions as $desc) {
+            $promo = $desc->getRefPromo();
+            if (!in_array($promo, $promos, true)) {
+                $promos[] = $promo;
+            }
+        }
+
+        // --- 🔥 AJOUTS POUR LE BON FONCTIONNEMENT DU TWIG ---
+
+        // Trier les promotions du plus récent au plus ancien
+        usort($promos, function ($a, $b) {
+            return $b->getAnneeDebut() <=> $a->getAnneeDebut();
+        });
+
+        // Prendre les trois dernières promotions
+        $lastPromos = array_slice($promos, 0, 3);
+
+        // -----------------------------------------------------
+
         return $this->render('professeur/show.html.twig', [
             'professeur' => $professeur,
+            'promotions' => $promos,     // inchangé
+            'lastPromos' => $lastPromos, // nécessaire pour le Twig
         ]);
     }
 
@@ -73,7 +99,7 @@ final class ProfesseurController extends AbstractController
     #[Route('/{id}', name: 'app_professeur_delete', methods: ['POST'])]
     public function delete(Request $request, Professeur $professeur, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$professeur->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $professeur->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($professeur);
             $entityManager->flush();
         }
