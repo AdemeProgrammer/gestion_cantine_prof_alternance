@@ -2,6 +2,8 @@
 
 {{ form_start(form) }}
 
+<div id="paiement-alert-container"></div>
+
 {% for formField in form %}
     {% if "hidden" in formField.vars.block_prefixes %}
         {{ form_widget(formField) }}
@@ -17,3 +19,133 @@
     <button class="btn btn-primary mt-2 col-4">{{ button_label|default('Sauvegarder') }}</button>
 </div>
 {{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Script de validation du paiement chargé');
+
+    // Attendre que Select2 soit initialisé
+    setTimeout(function() {
+        const descriptionSelect = document.querySelector('select[name="paiement[ref_description_id]"]');
+        const montantInput = document.querySelector('input[name="paiement[montant]"]');
+        const alertContainer = document.querySelector('#paiement-alert-container');
+
+        console.log('Description select:', descriptionSelect);
+        console.log('Montant input:', montantInput);
+
+        if (!descriptionSelect || !montantInput) {
+            console.error('Éléments du formulaire non trouvés');
+            return;
+        }
+
+        let maxMontant = null;
+
+        // Fonction pour afficher une alerte
+        function showAlert(message, type = 'warning') {
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show mb-3" role="alert">
+                    <i class="ki-duotone ki-information-5 fs-2hx me-2">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                    </i>
+                    <div class="d-inline-block align-middle">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        }
+
+        // Fonction pour récupérer le montant maximum
+        function fetchMaxMontant(descriptionId) {
+            if (!descriptionId || descriptionId === '') {
+                maxMontant = null;
+                console.log('Pas de description sélectionnée');
+                return;
+            }
+
+            console.log('Récupération du montant max pour description:', descriptionId);
+
+            fetch(`/paiement/ajax/max-montant/${descriptionId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Réponse AJAX:', data);
+                    if (data.maxMontant !== undefined) {
+                        maxMontant = data.maxMontant;
+                        montantInput.setAttribute('data-max-montant', maxMontant);
+                        console.log('Montant maximum défini:', maxMontant);
+                    } else {
+                        maxMontant = null;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération du montant maximum:', error);
+                    maxMontant = null;
+                });
+        }
+
+        // Écouteur sur le changement de description (pour Select2)
+        $(descriptionSelect).on('change', function() {
+            const descriptionId = this.value;
+            console.log('Description changée:', descriptionId);
+            alertContainer.innerHTML = '';
+            fetchMaxMontant(descriptionId);
+        });
+
+        // Bloquer les lettres dans le champ montant
+        montantInput.addEventListener('keypress', function(e) {
+            // Autoriser uniquement: chiffres (0-9), point (.), virgule (,), backspace, delete
+            const char = String.fromCharCode(e.which || e.keyCode);
+            const allowedChars = /[0-9.,]/;
+
+            if (!allowedChars.test(char) && e.which !== 8 && e.which !== 0) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Empêcher le collage de texte non numérique
+        montantInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+            // Ne garder que les chiffres, points et virgules
+            const cleanedData = pasteData.replace(/[^0-9.,]/g, '');
+            if (cleanedData) {
+                this.value = cleanedData.replace(',', '.');
+                // Déclencher l'événement input pour la validation du max
+                this.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        });
+
+        // Écouteur sur la saisie du montant
+        montantInput.addEventListener('input', function() {
+            // Remplacer les virgules par des points
+            this.value = this.value.replace(',', '.');
+
+            console.log('Montant saisi:', this.value, 'Max:', maxMontant);
+
+            if (maxMontant === null || maxMontant === 0) {
+                return;
+            }
+
+            const currentValue = parseFloat(this.value);
+
+            if (!isNaN(currentValue) && currentValue > maxMontant) {
+                console.log('Montant dépassé! Correction à', maxMontant);
+                this.value = maxMontant.toFixed(2);
+                showAlert(
+                    `<strong>Montant ajusté automatiquement!</strong><br>Le montant du paiement ne peut pas dépasser le total des facturations (${maxMontant.toFixed(2)}€).`,
+                    'warning'
+                );
+            }
+        });
+
+        // Si une description est déjà sélectionnée (mode édition), récupérer le max
+        if (descriptionSelect.value && descriptionSelect.value !== '') {
+            console.log('Description pré-sélectionnée:', descriptionSelect.value);
+            fetchMaxMontant(descriptionSelect.value);
+        }
+    }, 500); // Attendre 500ms pour Select2
+});
+</script>

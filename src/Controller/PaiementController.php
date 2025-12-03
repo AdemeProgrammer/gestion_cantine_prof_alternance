@@ -4,9 +4,12 @@ namespace App\Controller;
 
 use App\Entity\Paiement;
 use App\Form\PaiementType;
+use App\Repository\FacturationRepository;
 use App\Repository\PaiementRepository;
+use App\Repository\DescriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -77,5 +80,39 @@ final class PaiementController extends AbstractController
         }
 
         return $this->redirectToRoute('app_paiement_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/ajax/max-montant/{descriptionId}', name: 'app_paiement_max_montant', methods: ['GET'])]
+    public function getMaxMontant(
+        int $descriptionId,
+        DescriptionRepository $descriptionRepository,
+        FacturationRepository $facturationRepository
+    ): JsonResponse {
+        $description = $descriptionRepository->find($descriptionId);
+
+        if (!$description) {
+            return new JsonResponse(['error' => 'Description non trouvée'], 404);
+        }
+
+        $professeur = $description->getRefProfesseur();
+        if (!$professeur) {
+            return new JsonResponse(['error' => 'Professeur non trouvé'], 404);
+        }
+
+        // Calculer le total de toutes les facturations du professeur
+        $facturations = $facturationRepository->findBy(['refProfesseur' => $professeur]);
+
+        $totalFacturations = '0';
+        foreach ($facturations as $facturation) {
+            $totalFacturations = bcadd($totalFacturations, $facturation->getMontantTotal(), 2);
+        }
+
+        return new JsonResponse([
+            'maxMontant' => (float) $totalFacturations,
+            'professeur' => [
+                'nom' => $professeur->getNom(),
+                'prenom' => $professeur->getPrenom(),
+            ],
+        ]);
     }
 }

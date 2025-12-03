@@ -4,10 +4,12 @@ namespace App\Entity;
 
 use App\Enum\MoyenPaiement;
 use App\Repository\PaiementRepository;
+use App\Validator\MaxMontantPaiement;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PaiementRepository::class)]
+#[MaxMontantPaiement]
 class Paiement
 {
     #[ORM\Id]

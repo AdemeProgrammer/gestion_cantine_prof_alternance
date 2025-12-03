@@ -5,19 +5,37 @@ namespace App\Form;
 use App\Entity\Description;
 use App\Entity\Paiement;
 use App\Enum\MoyenPaiement;
+use App\Repository\FacturationRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PaiementType extends AbstractType
 {
+    public function __construct(
+        private FacturationRepository $facturationRepository
+    ) {
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('date_paiement')
-            ->add('montant')
+            ->add('montant', NumberType::class, [
+                'html5' => true,
+                'attr' => [
+                    'class' => 'form-control form-control-lg form-control-solid bg-opacity-80 bg-secondary',
+                    'step' => '0.01',
+                    'min' => '0',
+                    'pattern' => '[0-9]+(\.[0-9]{1,2})?',
+                    'inputmode' => 'decimal',
+                ],
+            ])
             ->add('moyen_paiement', EnumType::class, [
                 'class' => MoyenPaiement::class,
                 // affichera: Carte Bancaire / Chèque / Espece / Prélèvement
