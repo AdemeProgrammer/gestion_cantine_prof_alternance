@@ -1,6 +1,9 @@
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
-{% block title %}Fiche professeur{% endblock %}
+{% block title %}Fiche Professeur{% endblock %}
+
+{% block titre_page %}Fiche Professeur{% endblock %}
 
 {% block body %}
     <div class="container mt-4">
@@ -55,7 +58,8 @@
                                     <div class="card mb-3 mt-3">
                                         <div class="card-header">Descriptions</div>
                                         <div class="card-body">
-                                            {% set professeurDescriptions = promo.descriptions|filter(d => d.professeur.id == professeur.id) %}
+                                            {# Filtrer les descriptions par professeur #}
+                                            {% set professeurDescriptions = promo.descriptions|filter(d => d.refProfesseur.id == professeur.id) %}
 
                                             {% if professeurDescriptions|length > 0 %}
                                                 {% for description in professeurDescriptions %}
@@ -73,9 +77,7 @@
                                                         <!-- Paiements -->
                                                         {% if description.paiements|length > 0 %}
                                                             <div class="card mt-2">
-                                                                <div class="card-header">
-                                                                    Paiements
-                                                                </div>
+                                                                <div class="card-header">Paiements</div>
                                                                 <div class="card-body p-2">
                                                                     <table class="table table-sm table-bordered mb-0">
                                                                         <thead>
@@ -104,7 +106,6 @@
                                                         <a href="{{ path('app_paiement_new', { id: description.id }) }}" class="btn btn-primary btn-sm mt-2">
                                                             Créer un nouveau paiement
                                                         </a>
-
                                                     </div>
                                                 {% endfor %}
                                             {% else %}
