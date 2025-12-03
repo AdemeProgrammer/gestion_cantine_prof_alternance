@@ -7,7 +7,7 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-final class Version20251114093025 extends AbstractMigration
+final class Version20251203092223 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -16,7 +16,6 @@ final class Version20251114093025 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        /* --------- 1) (RE)CRÉE le trigger sur description (seed repas + seed facturation) --------- */
         $this->addSql("DROP TRIGGER IF EXISTS trg_repas_on_description_insert");
         $this->addSql(<<<'SQL'
 CREATE TRIGGER trg_repas_on_description_insert
@@ -68,7 +67,6 @@ BEGIN
         'En attente'                                            AS statut
     FROM
         (
-            /* Mois de l’année scolaire présents dans calendrier (hors août) */
             SELECT DISTINCT
                    CAST(DATE_FORMAT(c.`date`, '%Y-%m') AS CHAR(7)) COLLATE utf8mb4_unicode_ci AS mois
             FROM calendrier c
@@ -78,7 +76,6 @@ BEGIN
         ) AS M
         LEFT JOIN
         (
-            /* Nb de repas du prof par mois (YYYY-MM) sur cette promo */
             SELECT CAST(DATE_FORMAT(c.`date`, '%Y-%m') AS CHAR(7)) COLLATE utf8mb4_unicode_ci AS mois,
                    COUNT(*) AS nb_repas
             FROM repas r
@@ -97,7 +94,6 @@ BEGIN
 END
 SQL);
 
-        /* --------- 2) Trigger AFTER INSERT ON repas => recalcul immédiat (collations fixées) --------- */
         $this->addSql("DROP TRIGGER IF EXISTS trg_fact_after_insert_repas");
         $this->addSql(<<<'SQL'
 CREATE TRIGGER trg_fact_after_insert_repas
@@ -112,7 +108,6 @@ BEGIN
     DECLARE v_report DECIMAL(10,2);
     DECLARE v_nb INT;
 
-    /* Récupère la date et la promo du calendrier associé */
     SELECT c.`date`, c.ref_promo_id
       INTO v_date, v_promo_id
     FROM calendrier c
@@ -123,7 +118,6 @@ BEGIN
         SET v_prof_id  = NEW.professeur_id;
         SET v_mois_key = DATE_FORMAT(v_date, '%Y-%m');
 
-        /* Prix et report de la description (prof, promo) */
         SELECT COALESCE(d.prix_u, 0), COALESCE(d.report, 0)
           INTO v_prix_u, v_report
         FROM description d
@@ -131,7 +125,6 @@ BEGIN
           AND d.ref_promo_id      = v_promo_id
         LIMIT 1;
 
-        /* S'assurer que la facture existe pour (prof, mois) */
         INSERT INTO facturation (
             ref_professeur_id, mois, nb_repas,
             montant_total, montant_regle, montant_restant,
@@ -153,7 +146,6 @@ BEGIN
               AND f.mois COLLATE utf8mb4_unicode_ci = (v_mois_key) COLLATE utf8mb4_unicode_ci
         );
 
-        /* nb_repas réel du mois (compte les lignes repas existantes) */
         SELECT COUNT(*)
           INTO v_nb
         FROM repas r
@@ -163,7 +155,6 @@ BEGIN
           AND (CAST(DATE_FORMAT(c2.`date`, '%Y-%m') AS CHAR(7)) COLLATE utf8mb4_unicode_ci)
               = (v_mois_key) COLLATE utf8mb4_unicode_ci;
 
-        /* Mise à jour de la facture (montant_total et restant) */
         UPDATE facturation f
         SET f.nb_repas        = v_nb,
             f.montant_total   = ROUND(v_nb * v_prix_u, 2),
@@ -174,7 +165,6 @@ BEGIN
 END
 SQL);
 
-        /* --------- 3) Trigger AFTER DELETE ON repas => recalcul immédiat (collations fixées) --------- */
         $this->addSql("DROP TRIGGER IF EXISTS trg_fact_after_delete_repas");
         $this->addSql(<<<'SQL'
 CREATE TRIGGER trg_fact_after_delete_repas
@@ -188,7 +178,6 @@ BEGIN
     DECLARE v_prix_u DECIMAL(10,2);
     DECLARE v_nb INT;
 
-    /* Récupère la date et la promo du calendrier associé */
     SELECT c.`date`, c.ref_promo_id
       INTO v_date, v_promo_id
     FROM calendrier c
@@ -199,7 +188,6 @@ BEGIN
         SET v_prof_id  = OLD.professeur_id;
         SET v_mois_key = DATE_FORMAT(v_date, '%Y-%m');
 
-        /* Prix (depuis description) pour recalcul du total */
         SELECT COALESCE(d.prix_u, 0)
           INTO v_prix_u
         FROM description d
@@ -207,7 +195,6 @@ BEGIN
           AND d.ref_promo_id      = v_promo_id
         LIMIT 1;
 
-        /* nb_repas réel restant du mois (après suppression) */
         SELECT COUNT(*)
           INTO v_nb
         FROM repas r
@@ -217,7 +204,6 @@ BEGIN
           AND (CAST(DATE_FORMAT(c2.`date`, '%Y-%m') AS CHAR(7)) COLLATE utf8mb4_unicode_ci)
               = (v_mois_key) COLLATE utf8mb4_unicode_ci;
 
-        /* Mise à jour de la facture si elle existe */
         UPDATE facturation f
         SET f.nb_repas        = v_nb,
             f.montant_total   = ROUND(v_nb * v_prix_u, 2),
@@ -228,7 +214,6 @@ BEGIN
 END
 SQL);
 
-        /* --------- 4) Trigger AFTER INSERT ON paiement => répartition du paiement sur les factures du prof --------- */
         $this->addSql("DROP TRIGGER IF EXISTS trg_paiement_after_insert");
         $this->addSql(<<<'SQL'
 CREATE TRIGGER trg_paiement_after_insert
@@ -236,33 +221,39 @@ AFTER INSERT ON paiement
 FOR EACH ROW
 BEGIN
     DECLARE v_prof_id INT;
+    DECLARE v_promo_id INT;
     DECLARE v_montant_rest DECIMAL(10,2);
     DECLARE v_fact_id INT;
     DECLARE v_fact_restant DECIMAL(10,2);
 
-    /* Professeur lié à la description portée par le paiement */
-    SELECT d.ref_professeur_id
-      INTO v_prof_id
+    SELECT d.ref_professeur_id, d.ref_promo_id
+      INTO v_prof_id, v_promo_id
     FROM description d
     WHERE d.id = NEW.ref_description_id_id
     LIMIT 1;
 
     SET v_montant_rest = NEW.montant;
 
-    IF v_prof_id IS NOT NULL AND v_montant_rest > 0 THEN
+    IF v_prof_id IS NOT NULL AND v_promo_id IS NOT NULL AND v_montant_rest > 0 THEN
 
         paiement_loop: WHILE v_montant_rest > 0 DO
 
             SET v_fact_id = NULL;
             SET v_fact_restant = 0;
 
-            /* Plus ancienne facture du prof encore partiellement impayée */
             SELECT f.id, f.montant_restant
               INTO v_fact_id, v_fact_restant
             FROM facturation f
             WHERE f.ref_professeur_id = v_prof_id
               AND f.montant_restant > 0
               AND f.statut = 'En attente'
+              AND EXISTS (
+                  SELECT 1
+                  FROM calendrier c
+                  WHERE c.ref_promo_id = v_promo_id
+                    AND CAST(DATE_FORMAT(c.`date`, '%Y-%m') AS CHAR(7)) COLLATE utf8mb4_unicode_ci = f.mois COLLATE utf8mb4_unicode_ci
+                  LIMIT 1
+              )
             ORDER BY f.mois ASC
             LIMIT 1;
 
@@ -271,7 +262,6 @@ BEGIN
             END IF;
 
             IF v_montant_rest >= v_fact_restant THEN
-                /* Le paiement solde entièrement la facture */
                 UPDATE facturation f
                 SET f.montant_regle   = ROUND(f.montant_regle + v_fact_restant, 2),
                     f.montant_restant = 0.00,
@@ -280,7 +270,6 @@ BEGIN
 
                 SET v_montant_rest = ROUND(v_montant_rest - v_fact_restant, 2);
             ELSE
-                /* Le paiement ne couvre qu’une partie de la facture */
                 UPDATE facturation f
                 SET f.montant_regle   = ROUND(f.montant_regle + v_montant_rest, 2),
                     f.montant_restant = ROUND(f.montant_restant - v_montant_rest, 2)
@@ -298,12 +287,10 @@ SQL);
 
     public function down(Schema $schema): void
     {
-        /* Supprime les triggers de mise à jour live */
         $this->addSql("DROP TRIGGER IF EXISTS trg_paiement_after_insert");
         $this->addSql("DROP TRIGGER IF EXISTS trg_fact_after_insert_repas");
         $this->addSql("DROP TRIGGER IF EXISTS trg_fact_after_delete_repas");
 
-        /* Supprime et restaure le trigger d'origine (repas only) si rollback */
         $this->addSql("DROP TRIGGER IF EXISTS trg_repas_on_description_insert");
         $this->addSql(<<<'SQL'
 CREATE TRIGGER trg_repas_on_description_insert

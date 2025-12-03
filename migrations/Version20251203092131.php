@@ -7,10 +7,7 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
-final class Version20251114093021 extends AbstractMigration
+final class Version20251203092131 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -19,7 +16,6 @@ final class Version20251114093021 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE calendrier (id INT AUTO_INCREMENT NOT NULL, ref_promo_id INT DEFAULT NULL, date DATE NOT NULL, type_jour VARCHAR(255) NOT NULL, INDEX IDX_B2753CB956D7BC78 (ref_promo_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE description (id INT AUTO_INCREMENT NOT NULL, ref_professeur_id INT NOT NULL, ref_promo_id INT DEFAULT NULL, lundi TINYINT(1) NOT NULL, mardi TINYINT(1) NOT NULL, mercredi TINYINT(1) NOT NULL, jeudi TINYINT(1) NOT NULL, vendredi TINYINT(1) NOT NULL, report NUMERIC(10, 2) DEFAULT NULL, prix_u NUMERIC(10, 2) NOT NULL, INDEX IDX_6DE440269EE27989 (ref_professeur_id), INDEX IDX_6DE4402656D7BC78 (ref_promo_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE facturation (id INT AUTO_INCREMENT NOT NULL, ref_professeur_id INT NOT NULL, mois VARCHAR(50) NOT NULL, montant_total NUMERIC(10, 2) NOT NULL, montant_regle NUMERIC(10, 2) NOT NULL, montant_restant NUMERIC(10, 2) NOT NULL, statut VARCHAR(255) NOT NULL, nb_repas INT NOT NULL, report_m_1 NUMERIC(10, 2) NOT NULL, INDEX IDX_17EB513A9EE27989 (ref_professeur_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -42,7 +38,6 @@ final class Version20251114093021 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE calendrier DROP FOREIGN KEY FK_B2753CB956D7BC78');
         $this->addSql('ALTER TABLE description DROP FOREIGN KEY FK_6DE440269EE27989');
         $this->addSql('ALTER TABLE description DROP FOREIGN KEY FK_6DE4402656D7BC78');
