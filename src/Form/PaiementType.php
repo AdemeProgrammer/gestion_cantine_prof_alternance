@@ -16,16 +16,6 @@ class PaiementType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('date_paiement')
-            ->add('montant')
-            ->add('moyen_paiement', EnumType::class, [
-                'class' => MoyenPaiement::class,
-                // affichera: Carte Bancaire / Chèque / Espece / Prélèvement
-                'choice_label' => function (MoyenPaiement $choice): string {
-                    return $choice->value;
-                },
-                'placeholder' => 'Choisir un moyen de paiement',
-            ])
             ->add('ref_description_id', EntityType::class, [
                 'class' => Description::class,
                 // Nom Prénom du prof - année de début (voire 2024-2026)
@@ -68,7 +58,19 @@ class PaiementType extends AbstractType
                     return sprintf('%s - %s', $profTxt, $promoTxt);
                 },
                 'placeholder' => 'Choisir une description',
+                'label' => 'Professeur - Promo'
             ])
+            ->add('date_paiement')
+            ->add('moyen_paiement', EnumType::class, [
+                'class' => MoyenPaiement::class,
+                // affichera: Carte Bancaire / Chèque / Espece / Prélèvement
+                'choice_label' => function (MoyenPaiement $choice): string {
+                    return $choice->value;
+                },
+                'placeholder' => 'Choisir un moyen de paiement',
+            ])
+            ->add('montant')
+
         ;
     }
 
