@@ -9,7 +9,7 @@
 
             <!-- Colonne gauche : Infos du prof -->
             <div class="col-md-3">
-                <div class="card shadow-sm mb-3">
+                <div class="card shadow-sm mb-3 mt-4">
                     <div class="card-header">
                         <h5 class="mb-0">Infos Professeur</h5>
                     </div>
@@ -29,7 +29,7 @@
             <div class="col-md-9">
 
                 <!-- Onglets Promotions -->
-                <div class="card shadow-sm mb-3">
+                <div class="card shadow-sm mb-3 mt-4">
                     <div class="card-header">
                         <h5 class="mb-0">Promotions</h5>
                     </div>
@@ -51,14 +51,15 @@
                             {% for promo in sortedPromos %}
                                 <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="promo_{{ promo.id }}" role="tabpanel">
 
-                                    <!-- Descriptions -->
-                                    <div class="card mb-3">
+                                    <!-- Descriptions filtrées par professeur -->
+                                    <div class="card mb-3 mt-3">
                                         <div class="card-header">Descriptions</div>
                                         <div class="card-body">
-                                            {% if promo.descriptions|length > 0 %}
-                                                {% for description in promo.descriptions %}
+                                            {% set professeurDescriptions = promo.descriptions|filter(d => d.professeur.id == professeur.id) %}
+
+                                            {% if professeurDescriptions|length > 0 %}
+                                                {% for description in professeurDescriptions %}
                                                     <div class="border rounded p-2 mb-2">
-                                                        <p><strong>ID :</strong> {{ description.id }}</p>
                                                         <p><strong>Prix unitaire :</strong> {{ description.prixU }}</p>
                                                         <p><strong>Report :</strong> {{ description.report }}</p>
                                                         <p><strong>Jours activés :</strong>
@@ -99,13 +100,19 @@
                                                         {% else %}
                                                             <p class="text-muted mt-1">Aucun paiement pour cette description.</p>
                                                         {% endif %}
+
+                                                        <a href="{{ path('app_paiement_new', { id: description.id }) }}" class="btn btn-primary btn-sm mt-2">
+                                                            Créer un nouveau paiement
+                                                        </a>
+
                                                     </div>
                                                 {% endfor %}
                                             {% else %}
-                                                <p class="text-muted">Aucune description enregistrée pour cette promotion.</p>
+                                                <p class="text-muted">Aucune description enregistrée pour ce professeur dans cette promotion.</p>
                                             {% endif %}
                                         </div>
                                     </div>
+
                                 </div>
                             {% endfor %}
                         </div>
@@ -113,7 +120,7 @@
                 </div>
 
                 <!-- Facturations -->
-                <div class="card shadow-sm">
+                <div class="card shadow-sm mt-4">
                     <div class="card-header">
                         <h5 class="mb-0">Facturations</h5>
                     </div>

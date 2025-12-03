@@ -68,7 +68,6 @@ class Description
     public function setLundi(bool $lundi): static
     {
         $this->lundi = $lundi;
-
         return $this;
     }
 
@@ -80,7 +79,6 @@ class Description
     public function setMardi(bool $mardi): static
     {
         $this->mardi = $mardi;
-
         return $this;
     }
 
@@ -92,7 +90,6 @@ class Description
     public function setMercredi(bool $mercredi): static
     {
         $this->mercredi = $mercredi;
-
         return $this;
     }
 
@@ -104,7 +101,6 @@ class Description
     public function setJeudi(bool $jeudi): static
     {
         $this->jeudi = $jeudi;
-
         return $this;
     }
 
@@ -116,7 +112,6 @@ class Description
     public function setVendredi(bool $vendredi): static
     {
         $this->vendredi = $vendredi;
-
         return $this;
     }
 
@@ -128,7 +123,6 @@ class Description
     public function setReport(string $report): static
     {
         $this->report = $report;
-
         return $this;
     }
 
@@ -140,8 +134,15 @@ class Description
     public function setRefProfesseur(?Professeur $refProfesseur): static
     {
         $this->refProfesseur = $refProfesseur;
-
         return $this;
+    }
+
+    /**
+     * Nouveau getter pour Twig
+     */
+    public function getProfesseur(): ?Professeur
+    {
+        return $this->refProfesseur;
     }
 
     public function getRefPromo(): ?Promo
@@ -152,7 +153,6 @@ class Description
     public function setRefPromo(?Promo $refPromo): static
     {
         $this->refPromo = $refPromo;
-
         return $this;
     }
 
@@ -164,7 +164,6 @@ class Description
     public function setPrixU(string $prix_u): static
     {
         $this->prix_u = $prix_u;
-
         return $this;
     }
 
@@ -182,19 +181,16 @@ class Description
             $this->paiements->add($paiement);
             $paiement->setRefDescriptionId($this);
         }
-
         return $this;
     }
 
     public function removePaiement(Paiement $paiement): static
     {
         if ($this->paiements->removeElement($paiement)) {
-            // set the owning side to null (unless already changed)
             if ($paiement->getRefDescriptionId() === $this) {
                 $paiement->setRefDescriptionId(null);
             }
         }
-
         return $this;
     }
 }
