@@ -60,7 +60,7 @@
                 </div>
                 <!--end::Header-->
                 <!--begin::Illustration-->
-                <div class="d-none d-lg-block d-flex flex-row-auto bgi-no-repeat bgi-position-x-center bgi-size-contain bgi-position-y-bottom min-h-100px min-h-lg-350px" style="background-image: url({{ asset('theme/media/illustrations/login.png') }})"></div>
+                <div id="login-illustration" class="d-none d-lg-block d-flex flex-row-auto bgi-no-repeat bgi-position-x-center bgi-size-contain bgi-position-y-bottom min-h-100px min-h-lg-350px"></div>
                 <!--end::Illustration-->
             </div>
             <!--end::Wrapper-->
@@ -102,6 +102,9 @@
 <script src="{{ asset("theme/plugins/global/plugins.bundle.js")}}"></script>
 <script src="{{ asset("theme/js/scripts.bundle.js")}}"></script>
 <!--end::Global Javascript Bundle-->
+<script>
+document.getElementById('login-illustration').style.backgroundImage = 'url({{ asset('theme/media/illustrations/login.png') }})';
+</script>
 {% block javascripts %}
     <!--begin::Custom Javascript(used for this page only)-->
     <script src="{{ asset("theme/js/custom/authentication/sign-in/general.js")}}"></script>

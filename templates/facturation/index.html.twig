@@ -13,37 +13,6 @@
 
     {# DataTables via CDN (comme avant) #}
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
-
-    <style>
-        :root{
-            --icon-size: 22px;
-            --paid-bg:#e8f5e9; --paid-bd:#b7e1be; --paid-fg:#1e7e34;    /* Payé */
-            --pend-bg:#fff4e6; --pend-bd:#ffd8a8; --pend-fg:#d9480f;   /* En attente */
-        }
-        #facturationTable th, #facturationTable td{ vertical-align:middle; text-align:center; }
-        #facturationTable th:first-child, #facturationTable td:first-child{ text-align:left; } /* Description à gauche */
-        .table thead th{ white-space:nowrap; }
-
-        .btn-icon{
-            width:40px;height:40px;padding:0;
-            display:inline-flex;align-items:center;justify-content:center;
-            border-radius:.7rem;
-        }
-        .btn-icon i[class^="ki-"], .btn-icon i[class*=" ki-"]{ font-size:var(--icon-size); line-height:1; }
-        .col-actions{ width: 140px; white-space: nowrap; }
-
-        .state-pill{
-            display:inline-flex;align-items:center;justify-content:center;
-            min-width:96px;height:28px;padding:0 .6rem;border-radius:999px;border:1px solid transparent;
-            font-weight:600;
-        }
-        .state-paid{ background:var(--paid-bg); color:var(--paid-fg); border-color:var(--paid-bd); }
-        .state-pend{ background:var(--pend-bg); color:var(--pend-fg); border-color:var(--pend-bd); }
-
-        .money{ font-variant-numeric: tabular-nums; }
-        .money-restant.pos{ color:#dc3545; font-weight:600; }  /* restant > 0 */
-        .money-restant.zero{ color:#198754; font-weight:600; } /* restant = 0 */
-    </style>
 {% endblock %}
 
 {% block body %}
@@ -73,7 +42,7 @@
                                 <th>Montant restant</th>
                                 <th>Statut</th>
                                 <th>Nb repas</th>
-                                <th class="text-end col-actions">Actions</th>
+                                <th class="text-end">Actions</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -140,11 +109,11 @@
                                     <td class="money" data-order="{{ mtNum + 0 }}">{{ mtD }}</td>
                                     <td class="money" data-order="{{ mrNum + 0 }}">{{ mrD }}</td>
 
-                                    <td class="money money-restant {{ restantPos ? 'pos' : 'zero' }}"
+                                    <td class="{{ restantPos ? 'text-danger fw-bold' : 'text-success fw-bold' }}"
                                         data-order="{{ mrsNum + 0 }}">{{ mrsD }}</td>
 
                                     <td data-order="{{ stLbl ?: '' }}">
-                                        <span class="state-pill {{ stClass }}">{{ stLbl ?: '—' }}</span>
+                                        <span class="badge {{ stLbl == 'Payé' ? 'badge-light-success' : 'badge-light-warning' }}">{{ stLbl ?: '—' }}</span>
                                     </td>
 
                                     <td data-order="{{ f.nbRepas ?? 0 }}">{{ f.nbRepas ?? 0 }}</td>

@@ -1,39 +1,172 @@
+{# templates/paiement/index.html.twig #}
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
-{% block title %}Paiement index{% endblock %}
+{% block title %}Paiements{% endblock %}
+{% block titre_page %}Liste des paiements{% endblock %}
+{% block action_page %}
+    <a href="{{ path('app_paiement_new') }}" class="btn btn-primary">+ Créer un nouveau paiement</a>
+{% endblock %}
+
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Paiement") }}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {# KeenIcons #}
+    <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/duotone/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/outline/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/solid/style.css') }}">
+{% endblock %}
 
 {% block body %}
-    <h1>Paiement index</h1>
+    {% if paiements is empty %}
+        <div class="card">
+            <div class="card-body text-center py-10">
+                <div class="fs-5 mb-3">Aucun paiement enregistré.</div>
+                <a href="{{ path('app_paiement_new') }}" class="btn btn-sm btn-primary">Créer le premier paiement</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="paiementTable" class="table table-sm table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Professeur - Promotion</th>
+                                <th>Date de paiement</th>
+                                <th>Montant</th>
+                                <th>Moyen de paiement</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for paiement in paiements %}
+                            {# Récupération de la description #}
+                            {% set desc = paiement.refDescriptionId %}
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Date_paiement</th>
-                <th>Montant</th>
-                <th>Moyen_paiement</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for paiement in paiements %}
-            <tr>
-                <td>{{ paiement.id }}</td>
-                <td>{{ paiement.datePaiement ? paiement.datePaiement|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ paiement.montant }}</td>
-                <td>{{ paiement.moyenPaiement.value }}</td>
-                <td>
-                    <a href="{{ path('app_paiement_show', {'id': paiement.id}) }}">show</a>
-                    <a href="{{ path('app_paiement_edit', {'id': paiement.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                            {# Libellé Professeur - Promo #}
+                            {% set profNom = 'Professeur inconnu' %}
+                            {% set promoTxt = 'Promo inconnue' %}
 
-    <a href="{{ path('app_paiement_new') }}">Create new</a>
+                            {% if desc %}
+                                {% if desc.refProfesseur %}
+                                    {% set P = desc.refProfesseur %}
+                                    {% set profNom = ((P.nom ?? '') ~ ' ' ~ (P.prenom ?? ''))|trim ?: 'Professeur' %}
+                                {% endif %}
+                                {% if desc.refPromo %}
+                                    {% set PR = desc.refPromo %}
+                                    {% if PR.anneeDebut is defined and PR.anneeDebut is not null %}
+                                        {% set y1 = PR.anneeDebut %}
+                                        {% set y2 = (PR.anneeFin ?? (PR.anneeDebut + 1)) %}
+                                        {% set promoTxt = y1 ~ '-' ~ y2 %}
+                                    {% elseif PR.nom is defined and PR.nom %}
+                                        {% set promoTxt = PR.nom %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+
+                            {% set descLabel = profNom ~ ' - ' ~ promoTxt %}
+
+                            {# Date de paiement #}
+                            {% set dateKey = paiement.datePaiement ? paiement.datePaiement|date('Y-m-d H:i:s') : '' %}
+                            {% set dateDisplay = paiement.datePaiement ? paiement.datePaiement|date('d/m/Y à H:i') : '—' %}
+
+                            {# Montant #}
+                            {% set montant = paiement.montant ?? 0 %}
+                            {% set montantDisplay = montant|number_format(2, ',', ' ') ~ ' €' %}
+
+                            {# Moyen de paiement #}
+                            {% set moyenPaiement = paiement.moyenPaiement ? paiement.moyenPaiement.value : '—' %}
+
+                            {# Badge styling based on payment method #}
+                            {% set badgeClass = 'badge-light-primary' %}
+                            {% if moyenPaiement == 'ESPECES' or moyenPaiement == 'especes' %}
+                                {% set badgeClass = 'badge-light-success' %}
+                            {% elseif moyenPaiement == 'CHEQUE' or moyenPaiement == 'cheque' %}
+                                {% set badgeClass = 'badge-light-info' %}
+                            {% elseif moyenPaiement == 'VIREMENT' or moyenPaiement == 'virement' %}
+                                {% set badgeClass = 'badge-light-warning' %}
+                            {% elseif moyenPaiement == 'CARTE_BANCAIRE' or moyenPaiement == 'carte_bancaire' %}
+                                {% set badgeClass = 'badge-light-primary' %}
+                            {% endif %}
+
+                            {# Format payment method label #}
+                            {% set moyenLabel = moyenPaiement %}
+                            {% if moyenPaiement == 'ESPECES' %}
+                                {% set moyenLabel = 'Espèces' %}
+                            {% elseif moyenPaiement == 'CHEQUE' %}
+                                {% set moyenLabel = 'Chèque' %}
+                            {% elseif moyenPaiement == 'VIREMENT' %}
+                                {% set moyenLabel = 'Virement' %}
+                            {% elseif moyenPaiement == 'CARTE_BANCAIRE' %}
+                                {% set moyenLabel = 'Carte bancaire' %}
+                            {% endif %}
+
+                            <tr>
+                                <td data-order="{{ descLabel|lower }}">{{ descLabel }}</td>
+                                <td data-order="{{ dateKey }}">{{ dateDisplay }}</td>
+                                <td data-order="{{ montant }}">{{ montantDisplay }}</td>
+                                <td><span class="badge {{ badgeClass }}">{{ moyenLabel }}</span></td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2">
+                                        <a class="btn btn-sm btn-secondary btn-icon"
+                                           href="{{ path('app_paiement_show', {'id': paiement.id}) }}"
+                                           title="Afficher" aria-label="Afficher">
+                                            <i class="ki-outline ki-eye"></i>
+                                        </a>
+                                        <a class="btn btn-sm btn-primary btn-icon"
+                                           href="{{ path('app_paiement_edit', {'id': paiement.id}) }}"
+                                           title="Modifier" aria-label="Modifier">
+                                            <i class="ki-outline ki-pencil"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function(){
+            const fr = {
+                "sEmptyTable": "Aucune donnée disponible",
+                "sInfo": "Affichage _START_ à _END_ sur _TOTAL_",
+                "sInfoEmpty": "Affichage 0 à 0 sur 0",
+                "sInfoFiltered": "(filtré de _MAX_ au total)",
+                "sLengthMenu": "Afficher _MENU_",
+                "sLoadingRecords": "Chargement...",
+                "sProcessing": "Traitement...",
+                "sSearch": "Rechercher :",
+                "sZeroRecords": "Aucun résultat trouvé",
+                "oPaginate": {
+                    "sFirst": "Premier",
+                    "sLast": "Dernier",
+                    "sNext": "Suivant",
+                    "sPrevious": "Précédent"
+                }
+            };
+
+            $(function(){
+                $('#paiementTable').DataTable({
+                    language: fr,
+                    pageLength: 25,
+                    order: [[1, 'desc']], // Date décroissante
+                    responsive: true,
+                    columnDefs: [
+                        { targets: -1, orderable: false } // Actions non triables
+                    ]
+                });
+            });
+        })();
+    </script>
 {% endblock %}

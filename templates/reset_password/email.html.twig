@@ -1,47 +1,41 @@
-
-<style>html,body { padding: 0; margin:0; }</style>
-<div style="font-family:Arial,Helvetica,sans-serif; line-height: 1.5; font-weight: normal; font-size: 15px; color: #2F3044; min-height: 100%; margin:0; padding:0; width:100%; background-color:#edf2f7">
-    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;margin:0 auto; padding:0; max-width:600px">
+<div class="p-0 m-0 w-100 bg-light">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="mx-auto">
         <tbody>
         <tr>
-            <td align="center" valign="center" style="text-align:center; padding: 40px">
-                <img style="background-color: lightblue; border-radius: 6px"  width="150px" alt="Logo"
+            <td align="center" valign="center" class="text-center p-10">
+                <img width="150" alt="Logo" class="rounded"
                      src="{{ absolute_url(asset('images/logo/logo.png')) }}" />
-                {# logo email fonctionnelavec la variable "email.image" #}
+                {# logo email fonctionnel avec la variable "email.image" #}
             </td>
         </tr>
         <tr>
             <td align="left" valign="center">
-                <div style="text-align:left; margin: 0 20px; padding: 40px; background-color:#ffffff; border-radius: 6px">
+                <div class="text-start m-5 p-10 bg-white rounded">
                     <!--begin:Email content-->
-                    <div style="padding-bottom: 30px; font-size: 17px;">
+                    <div class="pb-8 fs-5">
                         <strong>Bonjour</strong>
                     </div>
-                    <div style="padding-bottom: 30px">Vous avez reçu ce mail pour reinitialisation votre mot de passe. Pour procéder à la réinitialisation du mot de passe, cliquez sur le bouton ci-dessous:</div>
-                    <div style="padding-bottom: 40px; text-align:center;">
-                        <a href="{{ url('app_reset_password', {token: resetToken.token}) }}" rel="noopener" style="text-decoration:none;display:inline-block;text-align:center;padding:0.75575rem 1.3rem;font-size:0.925rem;line-height:1.5;border-radius:0.35rem;color:#ffffff;background-color:#00B2FF;border:0px;margin-right:0.75rem!important;font-weight:600!important;outline:none!important;vertical-align:middle" target="_blank">Reinitialiser le mot de passe</a>
+                    <div class="pb-8">Vous avez reçu ce mail pour reinitialisation votre mot de passe. Pour procéder à la réinitialisation du mot de passe, cliquez sur le bouton ci-dessous:</div>
+                    <div class="pb-10 text-center">
+                        <a href="{{ url('app_reset_password', {token: resetToken.token}) }}" rel="noopener" class="btn btn-primary fw-bold" target="_blank">Reinitialiser le mot de passe</a>
                     </div>
-                    <div style="padding-bottom: 30px">Ce lien de réinitialisation de mot de passe expirera dans 60 minutes. Si vous n’avez pas demandé de réinitialisation de mot de passe, aucune autre mesure n’est requise.</div>
-                    <div style="border-bottom: 1px solid #eeeeee; margin: 15px 0"></div>
-                    <div style="padding-bottom: 50px; word-wrap: break-all;">
-                        <p style="margin-bottom: 10px;">Le bouton ne fonctionne pas? essaye de copier/coller l'url dans ton naviguateur:</p>
-                        <a href="{{ url('app_reset_password', {token: resetToken.token}) }}" rel="noopener" target="_blank" style="text-decoration:none;color: #00B2FF">{{ url('app_reset_password', {token: resetToken.token}) }}</a>
+                    <div class="pb-8">Ce lien de réinitialisation de mot de passe expirera dans 60 minutes. Si vous n'avez pas demandé de réinitialisation de mot de passe, aucune autre mesure n'est requise.</div>
+                    <div class="border-bottom mb-5"></div>
+                    <div class="pb-12">
+                        <p class="mb-3">Le bouton ne fonctionne pas? essaye de copier/coller l'url dans ton naviguateur:</p>
+                        <a href="{{ url('app_reset_password', {token: resetToken.token}) }}" rel="noopener" target="_blank" class="text-primary">{{ url('app_reset_password', {token: resetToken.token}) }}</a>
                     </div>
                     <!--end:Email content-->
-                    <div style="padding-bottom: 10px">Cordialement,
+                    <div class="pb-3">Cordialement,
                         <br>Follow Team.
-        <tr>
-            <td align="center" valign="center" style="font-size: 13px; text-align:center;padding: 20px; color: #6d6e7c;">
-                            <p>Copyright ©
-                            <a href="https://keenthemes.com" rel="noopener" target="_blank">Keenthemes</a>/Site réalisé par les alternants du
-                                <a href="https://www.lyceerobertschuman.com" target="_blank">lycée Robert Schuman</a>.</p>
-                            </td>
-                        </tr></br>
-                        </tbody>
-                        </table>
-                        </div>
-                        </div>
                     </div>
+                </td>
+            </tr>
+            <tr>
+                <td align="center" valign="center" class="fs-7 text-center p-5 text-muted">
+                    <p>Copyright ©
+                    <a href="https://keenthemes.com" rel="noopener" target="_blank">Keenthemes</a>/Site réalisé par les alternants du
+                        <a href="https://www.lyceerobertschuman.com" target="_blank">lycée Robert Schuman</a>.</p>
                 </td>
             </tr>
         </tbody>
