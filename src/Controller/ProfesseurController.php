@@ -59,22 +59,68 @@ final class ProfesseurController extends AbstractController
             }
         }
 
-        // --- 🔥 AJOUTS POUR LE BON FONCTIONNEMENT DU TWIG ---
-
         // Trier les promotions du plus récent au plus ancien
         usort($promos, function ($a, $b) {
             return $b->getAnneeDebut() <=> $a->getAnneeDebut();
         });
 
-        // Prendre les trois dernières promotions
-        $lastPromos = array_slice($promos, 0, 3);
+        // Associer les facturations aux promotions en fonction de l'année scolaire
+        // Une année scolaire va de septembre (année N) à juillet (année N+1)
+        $facturationsByPromo = [];
+        foreach ($promos as $promo) {
+            $facturationsByPromo[$promo->getId()] = [];
 
-        // -----------------------------------------------------
+            foreach ($professeur->getFacturations() as $facturation) {
+                // Extraire l'année du mois de facturation (format attendu: "YYYY-MM" ou "Septembre 2024", etc.)
+                $mois = $facturation->getMois();
+
+                // Essayer de parser le mois pour extraire l'année et le mois
+                if (preg_match('/(\d{4})-(\d{2})/', $mois, $matches)) {
+                    // Format YYYY-MM
+                    $annee = (int)$matches[1];
+                    $moisNum = (int)$matches[2];
+                } elseif (preg_match('/(\d{4})/', $mois, $matches)) {
+                    // Si on trouve juste une année
+                    $annee = (int)$matches[1];
+                    // Essayer de déduire le mois
+                    if (stripos($mois, 'janvier') !== false) $moisNum = 1;
+                    elseif (stripos($mois, 'février') !== false || stripos($mois, 'fevrier') !== false) $moisNum = 2;
+                    elseif (stripos($mois, 'mars') !== false) $moisNum = 3;
+                    elseif (stripos($mois, 'avril') !== false) $moisNum = 4;
+                    elseif (stripos($mois, 'mai') !== false) $moisNum = 5;
+                    elseif (stripos($mois, 'juin') !== false) $moisNum = 6;
+                    elseif (stripos($mois, 'juillet') !== false) $moisNum = 7;
+                    elseif (stripos($mois, 'août') !== false || stripos($mois, 'aout') !== false) $moisNum = 8;
+                    elseif (stripos($mois, 'septembre') !== false) $moisNum = 9;
+                    elseif (stripos($mois, 'octobre') !== false) $moisNum = 10;
+                    elseif (stripos($mois, 'novembre') !== false) $moisNum = 11;
+                    elseif (stripos($mois, 'décembre') !== false || stripos($mois, 'decembre') !== false) $moisNum = 12;
+                    else $moisNum = 0;
+                } else {
+                    continue; // On ne peut pas parser cette facturation
+                }
+
+                // Déterminer à quelle promotion appartient cette facturation
+                // Si le mois est >= 9 (septembre ou après), c'est l'année de début
+                // Si le mois est < 9 (avant septembre), c'est l'année de fin
+                if ($moisNum >= 9) {
+                    // De septembre à décembre : on est dans l'année de début
+                    if ($annee == $promo->getAnneeDebut()) {
+                        $facturationsByPromo[$promo->getId()][] = $facturation;
+                    }
+                } else {
+                    // De janvier à août : on est dans l'année de fin
+                    if ($annee == $promo->getAnneeFin()) {
+                        $facturationsByPromo[$promo->getId()][] = $facturation;
+                    }
+                }
+            }
+        }
 
         return $this->render('professeur/show.html.twig', [
             'professeur' => $professeur,
-            'promotions' => $promos,     // inchangé
-            'lastPromos' => $lastPromos, // nécessaire pour le Twig
+            'promotions' => $promos,
+            'facturationsByPromo' => $facturationsByPromo,
         ]);
     }
 
