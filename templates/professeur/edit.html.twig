@@ -1,13 +1,19 @@
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
-{% block title %}Modif des professeur{% endblock %}
+{% block title %}Modifier un professeur{% endblock %}
+{% block titre_page %}Modifier un professeur{% endblock %}
+{% block action_page %}
+    {{ include('professeur/_delete_form.html.twig') }}
+{% endblock %}
+
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Professeur") }}
+    {{ _breadcumb.etape("Modifier") }}
+{% endblock %}
 
 {% block body %}
-    <h1>Modifier un professeur</h1>
-
     {{ include('professeur/_form.html.twig', {'button_label': 'Update'}) }}
 
     <a href="{{ path('app_professeur_index') }}">Revenir à la liste</a>
-
-    {{ include('professeur/_delete_form.html.twig') }}
 {% endblock %}

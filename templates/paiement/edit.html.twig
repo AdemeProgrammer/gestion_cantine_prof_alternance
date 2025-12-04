@@ -1,13 +1,19 @@
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
-{% block title %}Edit Paiement{% endblock %}
+{% block title %}Modifier un paiement{% endblock %}
+{% block titre_page %}Modifier un paiement{% endblock %}
+{% block action_page %}
+    {{ include('paiement/_delete_form.html.twig') }}
+{% endblock %}
+
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Paiement") }}
+    {{ _breadcumb.etape("Modifier") }}
+{% endblock %}
 
 {% block body %}
-    <h1>Edit Paiement</h1>
-
     {{ include('paiement/_form.html.twig', {'button_label': 'Update'}) }}
 
-    <a href="{{ path('app_paiement_index') }}">back to list</a>
-
-    {{ include('paiement/_delete_form.html.twig') }}
+    <a href="{{ path('app_paiement_index') }}">Revenir à la liste</a>
 {% endblock %}

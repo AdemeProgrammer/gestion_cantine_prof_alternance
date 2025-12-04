@@ -1,10 +1,18 @@
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
-{% block title %}Facturation{% endblock %}
+{% block title %}Détails de la facturation{% endblock %}
+{% block titre_page %}Détails de la facturation{% endblock %}
+{% block action_page %}
+    <a href="{{ path('app_facturation_edit', {'id': facturation.id}) }}" class="btn btn-primary">Modifier</a>
+{% endblock %}
+
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Facturation") }}
+    {{ _breadcumb.etape("Détails") }}
+{% endblock %}
 
 {% block body %}
-    <h1>Facturation</h1>
-
     <table class="table">
         <tbody>
             <tr>
@@ -42,9 +50,7 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_facturation_index') }}">back to list</a>
-
-    <a href="{{ path('app_facturation_edit', {'id': facturation.id}) }}">edit</a>
+    <a href="{{ path('app_facturation_index') }}">Revenir à la liste</a>
 
     {{ include('facturation/_delete_form.html.twig') }}
 {% endblock %}

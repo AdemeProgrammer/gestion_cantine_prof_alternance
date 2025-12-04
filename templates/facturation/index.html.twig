@@ -1,7 +1,15 @@
 {# templates/facturation/index.html.twig #}
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
 {% block title %}Facturation{% endblock %}
+{% block titre_page %}Liste des facturations{% endblock %}
+{% block action_page %}
+{% endblock %}
+
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Facturation") }}
+{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -16,11 +24,6 @@
 {% endblock %}
 
 {% block body %}
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 m-0">Facturation</h1>
-            <a href="{{ path('app_facturation_new') }}" class="btn btn-primary">+ Créer une facturation</a>
-        </div>
-
         {% if facturations is empty %}
             <div class="card card-dashed card-hover">
                 <div class="card-body text-center py-5">
@@ -35,8 +38,8 @@
                         <table id="facturationTable" class="table table-sm table-striped align-middle">
                             <thead>
                             <tr>
-                                <th>Description</th>  {# Nouveau: Nom Prenom - Date promo #}
-                                <th>Mois</th>
+                                <th>Professeur <br>  Promotion</th>
+                                <th class="text-nowrap">Mois</th>
                                 <th>Montant total</th>
                                 <th>Montant réglé</th>
                                 <th>Montant restant</th>
@@ -47,33 +50,31 @@
                             </thead>
                             <tbody>
                             {% for f in facturations %}
-                                {# --- Récup lien description (propriété usuelle via colonne ref_description_id_id) --- #}
-                                {% set desc = (f.refDescriptionId is defined and f.refDescriptionId)
-                                    ? f.refDescriptionId
-                                    : (f.refDescriptionIdId is defined ? f.refDescriptionIdId : null) %}
+                                {# Récupération du professeur #}
+                                {% set prof = f.refProfesseur %}
 
-                                {# Libellé Description: "Nom Prenom - Date promo" #}
-                                {% set profNom = 'Professeur' %}
-                                {% set promoTxt = 'Promo' %}
+                                {# Libellé Professeur - Promo #}
+                                {% set profNom = 'Professeur inconnu' %}
+                                {% set promoTxt = 'Promo inconnue' %}
 
-                                {% if desc %}
-                                    {% if desc.refProfesseur %}
-                                        {% set P = desc.refProfesseur %}
-                                        {% set profNom = ((P.nom is defined and P.nom ? P.nom : '') ~ ' ' ~ (P.prenom is defined and P.prenom ? P.prenom : ''))|trim ?: 'Professeur' %}
-                                    {% endif %}
-                                    {% if desc.refPromo %}
-                                        {% set PR = desc.refPromo %}
-                                        {% if PR.anneeDebut is defined and PR.anneeDebut is not null %}
-                                            {% set y1 = PR.anneeDebut %}
-                                            {% set y2 = (PR.anneeFin is defined and PR.anneeFin is not null) ? PR.anneeFin : (PR.anneeDebut + 1) %}
-                                            {% set promoTxt = y1 ~ '-' ~ y2 %}
-                                        {% elseif PR.nom is defined and PR.nom %}
-                                            {% set promoTxt = PR.nom %}
+                                {% if prof %}
+                                    {% set profNom = ((prof.nom ?? '') ~ ' ' ~ (prof.prenom ?? ''))|trim ?: 'Professeur' %}
+
+                                    {# Récupérer la première description du professeur pour obtenir la promo #}
+                                    {% if prof.descriptions is not empty %}
+                                        {% set firstDesc = prof.descriptions|first %}
+                                        {% if firstDesc.refPromo %}
+                                            {% set PR = firstDesc.refPromo %}
+                                            {% if PR.anneeDebut is defined and PR.anneeDebut is not null %}
+                                                {% set y1 = PR.anneeDebut %}
+                                                {% set y2 = (PR.anneeFin ?? (PR.anneeDebut + 1)) %}
+                                                {% set promoTxt = y1 ~ '-' ~ y2 %}
+                                            {% elseif PR.nom is defined and PR.nom %}
+                                                {% set promoTxt = PR.nom %}
+                                            {% endif %}
                                         {% endif %}
                                     {% endif %}
                                 {% endif %}
-
-                                {% set descLabel = profNom ~ ' - ' ~ promoTxt %}
 
                                 {# Mois: DateTime ou chaîne #}
                                 {% set moisKey = f.mois ? (f.mois|date('Y-m')) : '' %}
@@ -102,9 +103,9 @@
                                 {% set restantPos = (mrsNum + 0) > 0 %}
 
                                 <tr>
-                                    <td data-order="{{ descLabel|lower }}">{{ descLabel }}</td>
+                                    <td data-order="{{ (profNom ~ ' ' ~ promoTxt)|lower }}">{{ profNom|raw }}<br>{{ promoTxt }}</td>
 
-                                    <td data-order="{{ moisKey }}">{{ moisDisplay }}</td>
+                                    <td class="text-nowrap" data-order="{{ moisKey }}">{{ moisDisplay }}</td>
 
                                     <td class="money" data-order="{{ mtNum + 0 }}">{{ mtD }}</td>
                                     <td class="money" data-order="{{ mrNum + 0 }}">{{ mrD }}</td>

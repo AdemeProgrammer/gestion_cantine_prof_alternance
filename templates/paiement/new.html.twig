@@ -1,12 +1,18 @@
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
-{% block title %}Création de paiement{% endblock %}
-{% block titre_page %}{% endblock %}
+{% block title %}Nouveau paiement{% endblock %}
+{% block titre_page %}Nouveau paiement{% endblock %}
+{% block action_page %}
+{% endblock %}
+
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Paiement") }}
+    {{ _breadcumb.etape("Nouveau paiement") }}
+{% endblock %}
 
 {% block body %}
-    <h1>Create new Paiement</h1>
-
     {{ include('paiement/_form.html.twig') }}
 
-    <a href="{{ path('app_paiement_index') }}">back to list</a>
+    <a href="{{ path('app_paiement_index') }}">Revenir à la liste</a>
 {% endblock %}

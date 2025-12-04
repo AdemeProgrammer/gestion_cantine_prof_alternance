@@ -2,8 +2,15 @@
 {% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
 {% block title %}Fiche Professeur{% endblock %}
-
 {% block titre_page %}Fiche Professeur{% endblock %}
+{% block action_page %}
+    <a href="{{ path('app_professeur_edit', { id: professeur.id }) }}" class="btn btn-primary">Modifier</a>
+{% endblock %}
+
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Professeur") }}
+    {{ _breadcumb.etape("Fiche") }}
+{% endblock %}
 
 {% block body %}
     <div class="container mt-4">

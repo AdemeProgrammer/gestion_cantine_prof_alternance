@@ -1,6 +1,16 @@
 {% extends 'base.html.twig' %}
+{% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
 {% block title %}Description{% endblock %}
+{% block titre_page %}Détails de la description{% endblock %}
+{% block action_page %}
+    <a href="{{ path('app_description_edit', {'id': description.id}) }}" class="btn btn-primary">Modifier</a>
+{% endblock %}
+
+{% block Breadcrumb %}
+    {{ _breadcumb.etape("Description") }}
+    {{ _breadcumb.etape("Détails") }}
+{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
