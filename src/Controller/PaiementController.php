@@ -95,20 +95,43 @@ final class PaiementController extends AbstractController
         }
 
         $professeur = $description->getRefProfesseur();
+        $promo = $description->getRefPromo();
+
         if (!$professeur) {
             return new JsonResponse(['error' => 'Professeur non trouvé'], 404);
         }
 
-        // Calculer le total de toutes les facturations du professeur
-        $facturations = $facturationRepository->findBy(['refProfesseur' => $professeur]);
+        // Calculer le montant restant uniquement pour les facturations de cette promotion
+        $montantRestantPromo = '0';
 
-        $totalFacturations = '0';
-        foreach ($facturations as $facturation) {
-            $totalFacturations = bcadd($totalFacturations, $facturation->getMontantTotal(), 2);
+        if ($promo) {
+            $anneeDebut = $promo->getAnneeDebut();
+            $anneeFin = $promo->getAnneeFin();
+
+            // Récupérer toutes les facturations du professeur
+            $facturations = $facturationRepository->findBy(['refProfesseur' => $professeur]);
+
+            // Filtrer les facturations par année de la promotion (ex: 2025-2026)
+            foreach ($facturations as $facturation) {
+                $mois = $facturation->getMois();
+
+                // Vérifier si le mois contient l'année de début ou de fin de la promo
+                if (str_contains($mois, (string)$anneeDebut) || str_contains($mois, (string)$anneeFin)) {
+                    $montantRestant = $facturation->getMontantRestant();
+                    if ($montantRestant !== null) {
+                        $montantRestantPromo = bcadd($montantRestantPromo, $montantRestant, 2);
+                    }
+                }
+            }
+        }
+
+        // S'assurer que le montant n'est pas négatif
+        if (bccomp($montantRestantPromo, '0', 2) < 0) {
+            $montantRestantPromo = '0';
         }
 
         return new JsonResponse([
-            'maxMontant' => (float) $totalFacturations,
+            'maxMontant' => (float) $montantRestantPromo,
             'professeur' => [
                 'nom' => $professeur->getNom(),
                 'prenom' => $professeur->getPrenom(),

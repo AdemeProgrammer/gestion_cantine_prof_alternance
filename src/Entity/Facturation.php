@@ -24,9 +24,6 @@ class Facturation
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $montant_regle = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $montant_restant = null;
-
     #[ORM\Column(enumType: Statut::class)]
     private ?Statut $statut = null;
 
@@ -83,14 +80,11 @@ class Facturation
 
     public function getMontantRestant(): ?string
     {
-        return $this->montant_restant;
-    }
+        if ($this->montant_total === null || $this->montant_regle === null) {
+            return null;
+        }
 
-    public function setMontantRestant(string $montant_restant): static
-    {
-        $this->montant_restant = $montant_restant;
-
-        return $this;
+        return bcsub($this->montant_total, $this->montant_regle, 2);
     }
 
     public function getStatut(): ?Statut

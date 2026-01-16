@@ -17,7 +17,6 @@ class FacturationType extends AbstractType
             ->add('mois')
             ->add('montant_total')
             ->add('montant_regle')
-            ->add('montant_restant')
             ->add('statut')
             ->add('nb_repas')
             ->add('report_m_1')

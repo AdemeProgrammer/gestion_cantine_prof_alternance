@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Facturation;
 use App\Form\FacturationType;
 use App\Repository\FacturationRepository;
+use App\Service\PaymentRedistributionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -51,13 +52,36 @@ final class FacturationController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_facturation_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Facturation $facturation, EntityManagerInterface $entityManager): Response
-    {
+    public function edit(
+        Request $request,
+        Facturation $facturation,
+        EntityManagerInterface $entityManager,
+        PaymentRedistributionService $redistributionService
+    ): Response {
+        // Sauvegarder les valeurs originales pour détecter les changements
+        $originalMontantTotal = $facturation->getMontantTotal();
+        $originalNbRepas = $facturation->getNbRepas();
+        $originalReportM1 = $facturation->getReportM1();
+
         $form = $this->createForm(FacturationType::class, $facturation);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Détecter si les champs impactant les paiements ont changé
+            $hasRelevantChanges =
+                $originalMontantTotal !== $facturation->getMontantTotal() ||
+                $originalNbRepas !== $facturation->getNbRepas() ||
+                $originalReportM1 !== $facturation->getReportM1();
+
             $entityManager->flush();
+
+            // Redistribuer les paiements uniquement si nécessaire
+            if ($hasRelevantChanges) {
+                $redistributionService->redistributePaymentsForFacturation($facturation);
+                $this->addFlash('info', 'Facturation modifiée. Les paiements ont été redistribués automatiquement.');
+            } else {
+                $this->addFlash('success', 'Facturation modifiée.');
+            }
 
             return $this->redirectToRoute('app_facturation_index', [], Response::HTTP_SEE_OTHER);
         }
