@@ -32,7 +32,7 @@ BEGIN
     DECLARE v_date DATE;
     DECLARE v_promo_id INT;
     DECLARE v_mois_key VARCHAR(7);
-    DECLARE v_prof_id INT;
+        DECLARE INT;
     DECLARE v_prix_u DECIMAL(10,2);
     DECLARE v_report DECIMAL(10,2);
     DECLARE v_nb INT;

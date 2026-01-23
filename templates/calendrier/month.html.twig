@@ -11,6 +11,50 @@
     {{ _breadcumb.etape("Mois") }}
 {% endblock %}
 {% block body %}
+    <style>
+        /* Conteneur du tableau avec scroll */
+        .table-sticky-wrapper {
+            max-height: 70vh;
+            overflow: auto;
+            position: relative;
+        }
+
+        /* En-tête sticky (première ligne) */
+        .table-sticky thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background-color: #f8f9fa;
+        }
+
+        /* Première colonne sticky */
+        .table-sticky tbody td:first-child,
+        .table-sticky thead th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            background-color: #f8f9fa;
+        }
+
+        /* Cellule en haut à gauche (intersection) - z-index plus élevé */
+        .table-sticky thead th:first-child {
+            z-index: 3;
+        }
+
+        /* Ligne "Type de Jour" sticky sous l'en-tête */
+        .table-sticky tbody tr:first-child td {
+            position: sticky;
+            top: 42px;
+            z-index: 1;
+            background-color: #fff;
+        }
+
+        /* Cellule "Type de Jour" première colonne */
+        .table-sticky tbody tr:first-child td:first-child {
+            z-index: 2;
+        }
+    </style>
+
     <div class="container py-4">
 
         <div class="d-flex align-items-center justify-content-between mb-3">
@@ -22,8 +66,8 @@
             <div><a class="btn btn-outline-secondary btn-sm" href="{{ path('cal_month', { id: promo.id, y: next.y, m: next.m }) }}">Mois suivant &raquo;</a></div>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-sm align-middle">
+        <div class="table-responsive table-sticky-wrapper">
+            <table class="table table-sm align-middle table-sticky">
                 <thead class="table-light">
                 <tr>
                     <th class="text-nowrap">Professeur</th>
