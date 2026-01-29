@@ -58,12 +58,12 @@
     <div class="container py-4">
 
         <div class="d-flex align-items-center justify-content-between mb-3">
-            <div><a class="btn btn-outline-secondary btn-sm" href="{{ path('cal_month', { id: promo.id, y: prev.y, m: prev.m }) }}">&laquo; Mois précédent</a></div>
+            <div>{% if not (month == 9 and year == promo.anneeDebut) %}<a class="btn btn-outline-secondary btn-sm" href="{{ path('cal_month', { id: promo.id, y: prev.y, m: prev.m }) }}">&laquo; Mois précédent</a>{% endif %}</div>
             <div class="text-center">
                 <div class="h5 m-0">Promo {{ promo.anneeDebut }} - {{ promo.anneeFin }}</div>
                 <div class="text-muted">{{ firstOfMonth|date('F Y', 'Europe/Paris')|capitalize }}</div>
             </div>
-            <div><a class="btn btn-outline-secondary btn-sm" href="{{ path('cal_month', { id: promo.id, y: next.y, m: next.m }) }}">Mois suivant &raquo;</a></div>
+            <div>{% if not (month == 8 and year == promo.anneeFin) %}<a class="btn btn-outline-secondary btn-sm" href="{{ path('cal_month', { id: promo.id, y: next.y, m: next.m }) }}">Mois suivant &raquo;</a>{% endif %}</div>
         </div>
 
         <div class="table-responsive table-sticky-wrapper">
