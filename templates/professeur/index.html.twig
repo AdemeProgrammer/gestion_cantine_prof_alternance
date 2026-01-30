@@ -120,7 +120,8 @@
                 if (!$) return;
                 $('#profTable').DataTable({
                     language: fr,
-                    pageLength: 25,
+                    pageLength: 100,
+                    lengthChange: false,
                     order: [[0,'asc']],           // tri sur "Prénom"
                     responsive: true,
                     autoWidth: false,

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Paiement;
+use App\Entity\Professeur;
 use App\Form\PaiementType;
 use App\Repository\FacturationRepository;
 use App\Repository\PaiementRepository;
@@ -25,11 +26,11 @@ final class PaiementController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_paiement_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new/{id}', name: 'app_paiement_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager, Professeur $professeur): Response
     {
         $paiement = new Paiement();
-        $form = $this->createForm(PaiementType::class, $paiement);
+        $form = $this->createForm(PaiementType::class, $paiement,[ "professeur" => $professeur ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

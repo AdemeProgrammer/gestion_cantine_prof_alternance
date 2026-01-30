@@ -166,7 +166,8 @@
             $(function(){
                 $('#facturationTable').DataTable({
                     language: fr,
-                    pageLength: 25,
+                    pageLength: 100,
+                    lengthChange: false,
                     order: [[1,'desc']],   // Mois décroissant (colonne 1 car 'Description' est en 0)
                     responsive: true,
                     columnDefs: [

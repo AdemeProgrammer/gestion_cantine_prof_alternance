@@ -4,6 +4,7 @@
 {% block title %}Fiche Professeur{% endblock %}
 {% block titre_page %}Fiche Professeur{% endblock %}
 {% block action_page %}
+    <a href="{{ path('app_paiement_new', { id: professeur.id }) }}" class="btn btn-success">Nouveau paiement</a>
     <a href="{{ path('app_professeur_edit', { id: professeur.id }) }}" class="btn btn-primary">Modifier</a>
 {% endblock %}
 
@@ -23,25 +24,36 @@
 {% block body %}
     <div class="container-fluid mt-4">
 
-        <div class="row g-4">
-
-            <!-- Colonne gauche : Infos du prof -->
-            <div class="col-md-3">
+        <!-- Infos du prof en haut -->
+        <div class="row mb-4">
+            <div class="col-12">
                 <div class="card shadow-sm">
                     <div class="card-header d-flex align-items-center justify-content-center min-h-60px">
                         <h5 class="m-0">Infos Professeur</h5>
                     </div>
                     <div class="card-body">
-                        <p><strong>Nom :</strong> {{ professeur.prenom }} {{ professeur.nom }}</p>
-                        <p><strong>Email :</strong> {{ professeur.email }}</p>
-                        <p><strong>Code compta :</strong> {{ professeur.codeCompta is not null ? professeur.codeCompta : 'N/A' }}</p>
-                        <p><strong>Actif :</strong> {{ professeur.estActif ? 'Oui' : 'Non' }}</p>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <p class="mb-0"><strong>Nom :</strong> {{ professeur.prenom }} {{ professeur.nom }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="mb-0"><strong>Email :</strong> {{ professeur.email }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="mb-0"><strong>Code compta :</strong> {{ professeur.codeCompta is not null ? professeur.codeCompta : 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="mb-0"><strong>Actif :</strong> {{ professeur.estActif ? 'Oui' : 'Non' }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Colonne droite : Onglets par promotion -->
-            <div class="col-md-9">
+        <!-- Onglets par promotion -->
+        <div class="row g-4">
+            <div class="col-12">
                 <div class="card shadow-sm">
                     <div class="card-header d-flex align-items-center justify-content-center min-h-60px">
                         <h5 class="m-0">Informations par promotion</h5>
@@ -64,75 +76,103 @@
                             {% for promo in sortedPromos %}
                                 <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="promo_{{ promo.id }}" role="tabpanel">
 
-                                    <!-- Descriptions -->
+                                    <!-- Informations -->
                                     <div class="card mb-3">
                                         <div class="card-header bg-light d-flex align-items-center justify-content-center min-h-50px">
-                                            <h6 class="m-0 fw-bold">Descriptions</h6>
+                                            <h6 class="m-0 fw-bold">Informations</h6>
                                         </div>
                                         <div class="card-body">
                                             {% set professeurDescriptions = promo.descriptions|filter(d => d.refProfesseur.id == professeur.id) %}
+                                            {% set promoFacturations = facturationsByPromo[promo.id] ?? [] %}
+
+                                            {# Calcul du total des paiements pour cette promo #}
+                                            {% set totalPaiements = 0 %}
+                                            {% for desc in professeurDescriptions %}
+                                                {% for paiement in desc.paiements %}
+                                                    {% set totalPaiements = totalPaiements + paiement.montant %}
+                                                {% endfor %}
+                                            {% endfor %}
+
+                                            {# Calcul du total facturé et nombre de repas #}
+                                            {% set totalFacture = 0 %}
+                                            {% set totalRepas = 0 %}
+                                            {% for f in promoFacturations %}
+                                                {% set totalFacture = totalFacture + f.montantTotal %}
+                                                {% set totalRepas = totalRepas + f.nbRepas %}
+                                            {% endfor %}
+
+                                            {# Calcul du solde (positif = à rembourser au prof, négatif = le prof doit) #}
+                                            {% set solde = totalPaiements - totalFacture %}
 
                                             {% if professeurDescriptions|length > 0 %}
-                                                <div class="table-responsive">
-                                                    <table class="table table-row-dashed align-middle gy-3 description-table">
-                                                        <thead>
-                                                            <tr class="text-muted fw-semibold">
-                                                                <th>Prix unitaire</th>
-                                                                <th>Report</th>
-                                                                <th>Lundi</th>
-                                                                <th>Mardi</th>
-                                                                <th>Mercredi</th>
-                                                                <th>Jeudi</th>
-                                                                <th>Vendredi</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {% for description in professeurDescriptions %}
-                                                                <tr>
-                                                                    <td>{{ description.prixU }} €</td>
-                                                                    <td>{{ description.report }} €</td>
-                                                                    <td class="text-center">
-                                                                        {% if description.lundi %}
-                                                                            <span class="badge badge-light-success">Oui</span>
+                                                {% for description in professeurDescriptions %}
+                                                    <div class="row g-4">
+                                                        {# Colonne gauche : Jours, Prix, Repas #}
+                                                        <div class="col-md-8">
+                                                            <div class="mb-3">
+                                                                <strong>Jours de repas :</strong>
+                                                                <div class="mt-2">
+                                                                    {% if description.lundi %}
+                                                                        <span class="badge badge-light-primary me-1">Lundi</span>
+                                                                    {% endif %}
+                                                                    {% if description.mardi %}
+                                                                        <span class="badge badge-light-primary me-1">Mardi</span>
+                                                                    {% endif %}
+                                                                    {% if description.mercredi %}
+                                                                        <span class="badge badge-light-primary me-1">Mercredi</span>
+                                                                    {% endif %}
+                                                                    {% if description.jeudi %}
+                                                                        <span class="badge badge-light-primary me-1">Jeudi</span>
+                                                                    {% endif %}
+                                                                    {% if description.vendredi %}
+                                                                        <span class="badge badge-light-primary me-1">Vendredi</span>
+                                                                    {% endif %}
+                                                                    {% if not description.lundi and not description.mardi and not description.mercredi and not description.jeudi and not description.vendredi %}
+                                                                        <span class="text-muted">Aucun jour sélectionné</span>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-md-6 mb-3">
+                                                                    <strong>Prix unitaire :</strong>
+                                                                    <div class="fs-4 fw-bold text-primary mt-1">{{ description.prixU }} €</div>
+                                                                </div>
+                                                                <div class="col-md-6 mb-3">
+                                                                    <strong>Nombre de repas :</strong>
+                                                                    <div class="fs-4 fw-bold text-dark mt-1">{{ totalRepas }}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {# Colonne droite : Remboursement #}
+                                                        <div class="col-md-4">
+                                                            <div class="card h-100 {% if solde > 0 %}bg-light-info border-info{% elseif solde < 0 %}bg-light-danger border-danger{% else %}bg-light-success border-success{% endif %}">
+                                                                <div class="card-body text-center d-flex flex-column justify-content-center">
+                                                                    <h6 class="fw-bold mb-3">Solde</h6>
+                                                                    <div class="fs-2 fw-bolder {% if solde > 0 %}text-info{% elseif solde < 0 %}text-danger{% else %}text-success{% endif %}">
+                                                                        {{ solde|number_format(2, ',', ' ') }} €
+                                                                    </div>
+                                                                    <div class="mt-2 small">
+                                                                        {% if solde > 0 %}
+                                                                            <span class="text-info">À rembourser</span>
+                                                                        {% elseif solde < 0 %}
+                                                                            <span class="text-danger">Reste à payer</span>
                                                                         {% else %}
-                                                                            <span class="badge badge-light">Non</span>
+                                                                            <span class="text-success">Soldé</span>
                                                                         {% endif %}
-                                                                    </td>
-                                                                    <td class="text-center">
-                                                                        {% if description.mardi %}
-                                                                            <span class="badge badge-light-success">Oui</span>
-                                                                        {% else %}
-                                                                            <span class="badge badge-light">Non</span>
-                                                                        {% endif %}
-                                                                    </td>
-                                                                    <td class="text-center">
-                                                                        {% if description.mercredi %}
-                                                                            <span class="badge badge-light-success">Oui</span>
-                                                                        {% else %}
-                                                                            <span class="badge badge-light">Non</span>
-                                                                        {% endif %}
-                                                                    </td>
-                                                                    <td class="text-center">
-                                                                        {% if description.jeudi %}
-                                                                            <span class="badge badge-light-success">Oui</span>
-                                                                        {% else %}
-                                                                            <span class="badge badge-light">Non</span>
-                                                                        {% endif %}
-                                                                    </td>
-                                                                    <td class="text-center">
-                                                                        {% if description.vendredi %}
-                                                                            <span class="badge badge-light-success">Oui</span>
-                                                                        {% else %}
-                                                                            <span class="badge badge-light">Non</span>
-                                                                        {% endif %}
-                                                                    </td>
-                                                                </tr>
-                                                            {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                                                                    </div>
+                                                                    <hr class="my-3">
+                                                                    <div class="small text-muted">
+                                                                        <div>Total payé : {{ totalPaiements|number_format(2, ',', ' ') }} €</div>
+                                                                        <div>Total facturé : {{ totalFacture|number_format(2, ',', ' ') }} €</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
                                             {% else %}
-                                                <p class="text-muted">Aucune description pour cette promotion.</p>
+                                                <p class="text-muted">Aucune information pour cette promotion.</p>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -222,7 +262,6 @@
                                     <thead>
                                         <tr class="text-muted fw-semibold">
                                             <th>Date</th>
-                                            <th>Heure</th>
                                             <th>Promotion</th>
                                             <th>Montant</th>
                                             <th>Moyen</th>
@@ -231,11 +270,8 @@
                                     <tbody>
                                         {% for item in allPaiements %}
                                             <tr>
-                                                <td data-order="{{ item.paiement.datePaiement ? item.paiement.datePaiement|date('Y-m-d H:i:s') : '' }}">
+                                                <td data-order="{{ item.paiement.datePaiement ? item.paiement.datePaiement|date('Y-m-d') : '' }}">
                                                     {{ item.paiement.datePaiement ? item.paiement.datePaiement|date('d/m/Y') : 'N/A' }}
-                                                </td>
-                                                <td>
-                                                    {{ item.paiement.datePaiement ? item.paiement.datePaiement|date('H:i:s') : 'N/A' }}
                                                 </td>
                                                 <td>{{ item.promo }}</td>
                                                 <td>{{ item.paiement.montant }} €</td>
@@ -292,25 +328,12 @@
                 const $ = window.jQuery;
                 if (!$) return;
 
-                // DataTable pour les descriptions
-                $('.description-table').each(function() {
-                    $(this).DataTable({
-                        language: fr,
-                        pageLength: 10,
-                        order: [[0,'asc']],
-                        responsive: true,
-                        autoWidth: false,
-                        paging: false,
-                        searching: false,
-                        info: false
-                    });
-                });
-
                 // DataTable pour les facturations (dans les onglets)
                 $('.facturation-table').each(function() {
                     $(this).DataTable({
                         language: fr,
-                        pageLength: 10,
+                        pageLength: 100,
+                        lengthChange: false,
                         order: [[0,'desc']],
                         responsive: true,
                         autoWidth: false
@@ -320,7 +343,8 @@
                 // DataTable pour les paiements (tri par date et heure par défaut)
                 $('#paiementTable').DataTable({
                     language: fr,
-                    pageLength: 25,
+                    pageLength: 100,
+                    lengthChange: false,
                     order: [[0,'desc']],  // Tri par date décroissant (plus récent en premier)
                     responsive: true,
                     autoWidth: false,

@@ -11,7 +11,7 @@ var KTAppDataTableSimple = function () {
         // Init datatable --- more info on datatables: https://datatables.net/manual/
         datatable = $(table).DataTable({
             responsive:true,
-            pageLength: 50,
+            pageLength: 100,
             info: false,
             lengthChange: false,
             showSearch:false

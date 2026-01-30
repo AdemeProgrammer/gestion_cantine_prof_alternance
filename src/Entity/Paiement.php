@@ -17,7 +17,7 @@ class Paiement
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $date_paiement = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]

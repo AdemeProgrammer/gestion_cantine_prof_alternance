@@ -10,7 +10,7 @@ var KTAppDataTableSimple = function () {
     var initDatatable = function () {
         // Init datatable --- more info on datatables: https://datatables.net/manual/
         datatable = $(table).DataTable({
-            pageLength: 10,
+            pageLength: 100,
             info: false,
             fixedColumns: {
                 left:1

@@ -5,7 +5,6 @@
 {% block title %}Paiements{% endblock %}
 {% block titre_page %}Liste des paiements{% endblock %}
 {% block action_page %}
-    <a href="{{ path('app_paiement_new') }}" class="btn btn-primary">+ Créer un nouveau paiement</a>
 {% endblock %}
 
 {% block Breadcrumb %}
@@ -159,7 +158,8 @@
             $(function(){
                 $('#paiementTable').DataTable({
                     language: fr,
-                    pageLength: 25,
+                    pageLength: 100,
+                    lengthChange: false,
                     order: [[1, 'desc']], // Date décroissante
                     responsive: true,
                     columnDefs: [

@@ -5,9 +5,12 @@ namespace App\Form;
 use App\Entity\Description;
 use App\Entity\Paiement;
 use App\Enum\MoyenPaiement;
+use App\Repository\DescriptionRepository;
 use App\Repository\FacturationRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -27,24 +30,15 @@ class PaiementType extends AbstractType
         $builder
             ->add('ref_description_id', EntityType::class, [
                 'class' => Description::class,
+                'query_builder' => function (DescriptionRepository $er) use ($options) {
+                return $er->createQueryBuilder('d')
+                    ->where('d.refProfesseur = :professeur')
+                    ->setParameter('professeur', $options['professeur']);
+                },
+
                 // Nom Prénom du prof - année de début (voire 2024-2026)
                 'choice_label' => function (Description $description): string {
-                    $prof = $description->getRefProfesseur();
                     $promo = $description->getRefPromo();
-
-                    // texte prof
-                    $profTxt = 'Professeur';
-                    if ($prof) {
-                        $prenom = $prof->getPrenom() ?? '';
-                        $nom    = $prof->getNom() ?? '';
-                        $full   = trim($prenom.' '.$nom);
-
-                        if ($full !== '') {
-                            $profTxt = $full;
-                        } elseif ($prof->getEmail()) {
-                            $profTxt = $prof->getEmail();
-                        }
-                    }
 
                     // texte promo
                     $promoTxt = '';
@@ -60,16 +54,21 @@ class PaiementType extends AbstractType
                         }
                     }
 
-                    if ($promoTxt === '') {
-                        return $profTxt;
-                    }
-
-                    return sprintf('%s - %s', $profTxt, $promoTxt);
+                    return sprintf('Promo - %s', $promoTxt);
                 },
                 'placeholder' => 'Choisir une description',
                 'label' => 'Professeur - Promo'
             ])
-            ->add('date_paiement')
+            ->add('date_paiement', DateType::class, [
+                'widget' => 'single_text',
+                'html5' => true,
+            ])
+            ->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+                $paiement = $event->getData();
+                if ($paiement && $paiement->getDatePaiement() === null) {
+                    $paiement->setDatePaiement(new \DateTime());
+                }
+            })
             ->add('moyen_paiement', EnumType::class, [
                 'class' => MoyenPaiement::class,
                 // affichera: Carte Bancaire / Chèque / Espece / Prélèvement
@@ -95,6 +94,7 @@ class PaiementType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Paiement::class,
+            'professeur' => null,
         ]);
     }
 }
