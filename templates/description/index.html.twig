@@ -18,25 +18,25 @@
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/outline/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/solid/style.css') }}">
 
-    {# DataTables (bundle local Saul) #}
-    <link rel="stylesheet" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}">
+    {# DataTables via CDN #}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 {% endblock %}
 
 {% block body %}
         {% if descriptions is empty %}
-            <div class="card card-dashed hover-elevate-up">
-                <div class="card-body text-center py-10">
-                    <div class="fs-5 mb-3">Aucune description enregistrée.</div>
+            <div class="card card-dashed card-hover">
+                <div class="card-body text-center py-5">
+                    <div class="mb-2">Aucune description enregistrée.</div>
                     <a href="{{ path('app_description_new') }}" class="btn btn-sm btn-primary">Créer la première description</a>
                 </div>
             </div>
         {% else %}
-            <div class="card">
+            <div class="card shadow-sm card-hover">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table id="descriptionTable" class="table table-row-dashed align-middle gy-3">
+                        <table id="descriptionTable" class="table table-sm table-striped align-middle">
                             <thead>
-                            <tr class="text-muted fw-semibold">
+                            <tr>
                                 <th>Professeur</th>
                                 <th>Promo</th>
                                 <th class="text-center w-50px">L</th>
@@ -148,22 +148,22 @@
 
                                     <td class="text-end">
                                         <div class="d-inline-flex gap-2">
-                                            <a class="btn btn-icon btn-light-secondary"
+                                            <a class="btn btn-secondary btn-icon"
                                                href="{{ path('app_description_show', {'id': d.id}) }}"
                                                title="Voir" aria-label="Voir">
-                                                <i class="ki-outline ki-eye fs-3"></i>
+                                                <i class="ki-outline ki-eye"></i>
                                             </a>
-                                            <a class="btn btn-icon btn-primary"
+                                            <a class="btn btn-primary btn-icon"
                                                href="{{ path('app_description_edit', {'id': d.id}) }}"
                                                title="Modifier" aria-label="Modifier">
-                                                <i class="ki-outline ki-pencil fs-3"></i>
+                                                <i class="ki-outline ki-pencil"></i>
                                             </a>
                                             <form method="post" action="{{ path('app_description_delete', {'id': d.id}) }}"
                                                   class="d-inline"
                                                   onsubmit="return confirm('Supprimer cette description ?');">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ d.id) }}">
-                                                <button class="btn btn-icon btn-danger" title="Supprimer" aria-label="Supprimer">
-                                                    <i class="ki-outline ki-trash fs-3"></i>
+                                                <button class="btn btn-danger btn-icon" title="Supprimer" aria-label="Supprimer">
+                                                    <i class="ki-outline ki-trash"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -180,10 +180,11 @@
 
 {% block javascripts %}
     {{ parent() }}
-    {# DataTables (bundle local Saul) #}
-    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
     <script>
-        (function () {
+        (function(){
             const fr = {
                 "sEmptyTable":"Aucune donnée disponible",
                 "sInfo":"Affichage _START_ à _END_ sur _TOTAL_",
@@ -196,22 +197,17 @@
                 "sZeroRecords":"Aucun résultat trouvé",
                 "oPaginate":{"sFirst":"Premier","sLast":"Dernier","sNext":"Suivant","sPrevious":"Précédent"}
             };
-
-            document.addEventListener('DOMContentLoaded', function () {
-                // jQuery est fourni par plugins.bundle.js (Saul). Si non injecté globalement, le rajouter côté layout.
-                const $table = window.jQuery && window.jQuery('#descriptionTable');
-                if (!$table) return;
-
-                $table.DataTable({
+            $(function(){
+                $('#descriptionTable').DataTable({
                     language: fr,
                     pageLength: 100,
                     lengthChange: false,
+                    dom: 'rtip',
                     order: [[0, 'asc']],
                     responsive: true,
-                    autoWidth: false,
                     columnDefs: [
                         { targets: [2,3,4,5,6], className: 'text-center', type: 'num' },
-                        { targets: -1, orderable: false, className: 'text-end' }
+                        { targets: -1, orderable: false }
                     ]
                 });
             });

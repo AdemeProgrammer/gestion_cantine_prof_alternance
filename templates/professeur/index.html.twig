@@ -16,25 +16,43 @@
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/duotone/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/outline/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/solid/style.css') }}">
-    {# DataTables (bundle local Saul) #}
-    <link rel="stylesheet" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}">
+    {# DataTables via CDN #}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 {% endblock %}
 
 {% block body %}
         {% if professeurs is empty %}
-            <div class="card card-dashed">
-                <div class="card-body text-center py-10">
-                    <div class="fs-5 mb-3">Aucun professeur enregistré.</div>
+            <div class="card card-dashed card-hover">
+                <div class="card-body text-center py-5">
+                    <div class="mb-2">Aucun professeur enregistré.</div>
                     <a href="{{ path('app_professeur_new') }}" class="btn btn-sm btn-primary">Créer le premier professeur</a>
                 </div>
             </div>
         {% else %}
-            <div class="card shadow-sm">
+            <div class="card shadow-sm card-hover">
                 <div class="card-body">
+                    <div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
+                        <div class="position-relative" style="min-width:200px;flex:1;max-width:280px">
+                            <input type="text" id="filterProf" class="form-control form-control-sm form-control-solid"
+                                   placeholder="Rechercher un professeur..." autocomplete="off">
+                            <div id="profSuggestions" class="position-absolute w-100 shadow-sm bg-white border rounded-bottom"
+                                 style="z-index:100;display:none;max-height:200px;overflow-y:auto"></div>
+                        </div>
+                        <div style="min-width:140px">
+                            <select id="filterActif" class="form-select form-select-sm form-select-solid">
+                                <option value="">Tous</option>
+                                <option value="Oui" selected>Actifs uniquement</option>
+                                <option value="Non">Inactifs uniquement</option>
+                            </select>
+                        </div>
+                        <button type="button" id="filterReset" class="btn btn-sm btn-light-danger">
+                            <i class="ki-outline ki-cross fs-4"></i>
+                        </button>
+                    </div>
                     <div class="table-responsive">
-                        <table id="profTable" class="table table-row-dashed align-middle gy-3">
+                        <table id="profTable" class="table table-sm table-striped align-middle">
                             <thead>
-                            <tr class="text-muted fw-semibold">
+                            <tr>
                                 <th>Prénom</th>
                                 <th>Nom</th>
                                 <th>Email</th>
@@ -65,15 +83,15 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="d-inline-flex gap-2">
-                                            <a class="btn btn-icon btn-light-secondary"
+                                            <a class="btn btn-secondary btn-icon"
                                                href="{{ path('app_professeur_show', {'id': professeur.id}) }}"
                                                title="Afficher" aria-label="Afficher">
-                                                <i class="ki-outline ki-eye fs-3"></i>
+                                                <i class="ki-outline ki-eye"></i>
                                             </a>
-                                            <a class="btn btn-icon btn-primary"
+                                            <a class="btn btn-primary btn-icon"
                                                href="{{ path('app_professeur_edit', {'id': professeur.id}) }}"
                                                title="Modifier" aria-label="Modifier">
-                                                <i class="ki-outline ki-pencil fs-3"></i>
+                                                <i class="ki-outline ki-pencil"></i>
                                             </a>
                                             {# Suppression inline (décommente si souhaité)
                       <form method="post" action="{{ path('app_professeur_delete', {'id': professeur.id}) }}"
@@ -98,8 +116,9 @@
 
 {% block javascripts %}
     {{ parent() }}
-    {# DataTables (bundle local Saul) #}
-    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
     <script>
         (function(){
             const fr = {
@@ -114,21 +133,68 @@
                 "sZeroRecords":"Aucun résultat trouvé",
                 "oPaginate":{"sFirst":"Premier","sLast":"Dernier","sNext":"Suivant","sPrevious":"Précédent"}
             };
-
-            document.addEventListener('DOMContentLoaded', function () {
-                const $ = window.jQuery;           // fourni par plugins.bundle.js via ton layout
-                if (!$) return;
-                $('#profTable').DataTable({
+            $(function(){
+                var dt = $('#profTable').DataTable({
                     language: fr,
                     pageLength: 100,
                     lengthChange: false,
-                    order: [[0,'asc']],           // tri sur "Prénom"
+                    dom: 'rtip',
+                    order: [[0,'asc']],
                     responsive: true,
-                    autoWidth: false,
                     columnDefs: [
-                        { targets: -1, orderable: false, className: 'text-end' }, // Actions
-                        { targets: 4, className: 'text-center' }                  // Actif
+                        { targets: -1, orderable: false }
                     ]
+                });
+
+                // Appliquer le filtre "Actifs uniquement" par défaut
+                dt.column(4).search('Oui').draw();
+
+                // Autocomplete professeur (recherche sur prénom + nom, colonnes 0 et 1)
+                var profInput = $('#filterProf');
+                var sugBox = $('#profSuggestions');
+                var profNames = [];
+                dt.rows().every(function(){
+                    var d = this.data();
+                    var prenom = $('<span>').html(d[0]).text().trim();
+                    var nom = $('<span>').html(d[1]).text().trim();
+                    var full = prenom + ' ' + nom;
+                    if(full.trim() && profNames.indexOf(full) === -1) profNames.push(full);
+                });
+                profNames.sort();
+
+                profInput.on('input', function(){
+                    var v = this.value.toLowerCase();
+                    dt.search(this.value).draw();
+                    if(!v){ sugBox.hide(); return; }
+                    var matches = profNames.filter(function(n){ return n.toLowerCase().indexOf(v) !== -1; });
+                    if(!matches.length){ sugBox.hide(); return; }
+                    sugBox.html(matches.map(function(n){
+                        return '<div class="px-3 py-2 suggestion-item" style="cursor:pointer">' + n + '</div>';
+                    }).join('')).show();
+                });
+
+                sugBox.on('click', '.suggestion-item', function(){
+                    var val = $(this).text();
+                    profInput.val(val);
+                    dt.search(val).draw();
+                    sugBox.hide();
+                });
+
+                $(document).on('click', function(e){
+                    if(!$(e.target).closest('#filterProf, #profSuggestions').length) sugBox.hide();
+                });
+
+                // Filtre actif (colonne 4)
+                $('#filterActif').on('change', function(){
+                    dt.column(4).search(this.value).draw();
+                });
+
+                // Reset
+                $('#filterReset').on('click', function(){
+                    profInput.val('');
+                    $('#filterActif').val('');
+                    sugBox.hide();
+                    dt.search('').columns().search('').draw();
                 });
             });
         })();

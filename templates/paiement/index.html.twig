@@ -17,19 +17,45 @@
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/duotone/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/outline/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/solid/style.css') }}">
+
+    {# DataTables via CDN #}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 {% endblock %}
 
 {% block body %}
     {% if paiements is empty %}
-        <div class="card">
-            <div class="card-body text-center py-10">
-                <div class="fs-5 mb-3">Aucun paiement enregistré.</div>
+        <div class="card card-dashed card-hover">
+            <div class="card-body text-center py-5">
+                <div class="mb-2">Aucun paiement enregistré.</div>
                 <a href="{{ path('app_paiement_new') }}" class="btn btn-sm btn-primary">Créer le premier paiement</a>
             </div>
         </div>
     {% else %}
-        <div class="card shadow-sm">
+        <div class="card shadow-sm card-hover">
             <div class="card-body">
+                <div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
+                    <div class="position-relative" style="min-width:200px;flex:1;max-width:280px">
+                        <input type="text" id="filterProf" class="form-control form-control-sm form-control-solid"
+                               placeholder="Professeur..." autocomplete="off">
+                        <div id="profSuggestions" class="position-absolute w-100 shadow-sm bg-white border rounded-bottom"
+                             style="z-index:100;display:none;max-height:200px;overflow-y:auto"></div>
+                    </div>
+                    <div style="min-width:160px">
+                        <select id="filterMoyen" class="form-select form-select-sm form-select-solid">
+                            <option value="">Moyen de paiement</option>
+                            <option value="Carte Bancaire">Carte Bancaire</option>
+                            <option value="Chèque">Chèque</option>
+                            <option value="Espece">Espece</option>
+                            <option value="Prélèvement">Prélèvement</option>
+                        </select>
+                    </div>
+                    <div style="min-width:160px">
+                        <input type="month" id="filterMois" class="form-control form-control-sm form-control-solid">
+                    </div>
+                    <button type="button" id="filterReset" class="btn btn-sm btn-light-danger">
+                        <i class="ki-outline ki-cross fs-4"></i>
+                    </button>
+                </div>
                 <div class="table-responsive">
                     <table id="paiementTable" class="table table-sm table-striped align-middle">
                         <thead>
@@ -110,18 +136,14 @@
                                 <td data-order="{{ montant }}">{{ montantDisplay }}</td>
                                 <td><span class="badge {{ badgeClass }}">{{ moyenLabel }}</span></td>
                                 <td class="text-end">
-                                    <div class="d-inline-flex gap-2">
-                                        <a class="btn btn-sm btn-secondary btn-icon"
-                                           href="{{ path('app_paiement_show', {'id': paiement.id}) }}"
-                                           title="Afficher" aria-label="Afficher">
-                                            <i class="ki-outline ki-eye"></i>
-                                        </a>
-                                        <a class="btn btn-sm btn-primary btn-icon"
-                                           href="{{ path('app_paiement_edit', {'id': paiement.id}) }}"
-                                           title="Modifier" aria-label="Modifier">
-                                            <i class="ki-outline ki-pencil"></i>
-                                        </a>
-                                    </div>
+                                    <form method="post" action="{{ path('app_paiement_delete', {'id': paiement.id}) }}"
+                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce paiement ?');"
+                                          style="display:inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ paiement.id) }}">
+                                        <button class="btn btn-danger btn-icon" title="Supprimer" aria-label="Supprimer">
+                                            <i class="ki-outline ki-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -135,6 +157,9 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
     <script>
         (function(){
             const fr = {
@@ -156,15 +181,74 @@
             };
 
             $(function(){
-                $('#paiementTable').DataTable({
+                var dt = $('#paiementTable').DataTable({
                     language: fr,
                     pageLength: 100,
                     lengthChange: false,
-                    order: [[1, 'desc']], // Date décroissante
+                    dom: 'rtip',
+                    order: [[1, 'desc']],
                     responsive: true,
                     columnDefs: [
-                        { targets: -1, orderable: false } // Actions non triables
+                        { targets: -1, orderable: false }
                     ]
+                });
+
+                // Autocomplete professeur
+                var profInput = $('#filterProf');
+                var sugBox = $('#profSuggestions');
+                var profNames = [];
+                dt.column(0).data().each(function(val){
+                    var name = val.split(/\s*-\s*/)[0].replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
+                    if(name && profNames.indexOf(name) === -1) profNames.push(name);
+                });
+                profNames.sort();
+
+                profInput.on('input', function(){
+                    var v = this.value.toLowerCase();
+                    dt.column(0).search(this.value).draw();
+                    if(!v){ sugBox.hide(); return; }
+                    var matches = profNames.filter(function(n){ return n.toLowerCase().indexOf(v) !== -1; });
+                    if(!matches.length){ sugBox.hide(); return; }
+                    sugBox.html(matches.map(function(n){
+                        return '<div class="px-3 py-2 suggestion-item" style="cursor:pointer">' + n + '</div>';
+                    }).join('')).show();
+                });
+
+                sugBox.on('click', '.suggestion-item', function(){
+                    var val = $(this).text();
+                    profInput.val(val);
+                    dt.column(0).search(val).draw();
+                    sugBox.hide();
+                });
+
+                $(document).on('click', function(e){
+                    if(!$(e.target).closest('#filterProf, #profSuggestions').length) sugBox.hide();
+                });
+
+                // Filtre moyen de paiement (colonne 3)
+                $('#filterMoyen').on('change', function(){
+                    dt.column(3).search(this.value).draw();
+                });
+
+                // Filtre mois (colonne 1) - match sur le mois dans la date affichée (format dd/mm/YYYY)
+                $('#filterMois').on('change', function(){
+                    var v = this.value;
+                    if(v){
+                        var parts = v.split('-');
+                        var search = parts[1] + '/' + parts[0];
+                        dt.column(1).search(search).draw();
+                    } else {
+                        dt.column(1).search('').draw();
+                    }
+                });
+
+                // Reset
+                $('#filterReset').on('click', function(){
+                    profInput.val('');
+                    $('#filterMoyen').val('');
+                    $('#filterMois').val('');
+                    sugBox.hide();
+                    dt.search('').columns().search('').draw();
                 });
             });
         })();

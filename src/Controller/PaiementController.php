@@ -37,12 +37,13 @@ final class PaiementController extends AbstractController
             $entityManager->persist($paiement);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_paiement_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_professeur_show', ['id' => $professeur->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('paiement/new.html.twig', [
             'paiement' => $paiement,
             'form' => $form,
+            'professeur' => $professeur,
         ]);
     }
 

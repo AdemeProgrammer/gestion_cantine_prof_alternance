@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 {% import "_macros/breadcumb.html.twig" as _breadcumb %}
 
-{% block title %}Nouveau paiement{% endblock %}
-{% block titre_page %}Nouveau paiement{% endblock %}
+{% block title %}Nouveau paiement - {{ professeur.prenom }} {{ professeur.nom }}{% endblock %}
+{% block titre_page %}Nouveau paiement concernant {{ professeur.prenom }} {{ professeur.nom }}{% endblock %}
 {% block action_page %}
 {% endblock %}
 

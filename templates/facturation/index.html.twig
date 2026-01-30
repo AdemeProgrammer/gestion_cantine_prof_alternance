@@ -34,6 +34,28 @@
         {% else %}
             <div class="card shadow-sm card-hover">
                 <div class="card-body">
+                    <div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
+                        <div class="position-relative" style="min-width:200px;flex:1;max-width:280px">
+                            <input type="text" id="filterProf" class="form-control form-control-sm form-control-solid"
+                                   placeholder="Professeur..." autocomplete="off">
+                            <div id="profSuggestions" class="position-absolute w-100 shadow-sm bg-white border rounded-bottom"
+                                 style="z-index:100;display:none;max-height:200px;overflow-y:auto"></div>
+                        </div>
+                        <div style="min-width:140px">
+                            <select id="filterStatut" class="form-select form-select-sm form-select-solid">
+                                <option value="">Statut</option>
+                                <option value="En attente">En attente</option>
+                                <option value="Payé">Payé</option>
+                                <option value="Contesté">Contesté</option>
+                            </select>
+                        </div>
+                        <div style="min-width:160px">
+                            <input type="month" id="filterMois" class="form-control form-control-sm form-control-solid">
+                        </div>
+                        <button type="button" id="filterReset" class="btn btn-sm btn-light-danger">
+                            <i class="ki-outline ki-cross fs-4"></i>
+                        </button>
+                    </div>
                     <div class="table-responsive">
                         <table id="facturationTable" class="table table-sm table-striped align-middle">
                             <thead>
@@ -45,7 +67,6 @@
                                 <th>Montant restant</th>
                                 <th>Statut</th>
                                 <th>Nb repas</th>
-                                <th class="text-end">Actions</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -120,20 +141,6 @@
                                     <td data-order="{{ f.nbRepas ?? 0 }}">{{ f.nbRepas ?? 0 }}</td>
 
 
-                                    <td class="text-end">
-                                        <div class="d-inline-flex gap-2">
-                                            <a class="btn btn-secondary btn-icon"
-                                               href="{{ path('app_facturation_show', {'id': f.id}) }}"
-                                               title="Afficher" aria-label="Afficher">
-                                                <i class="ki-outline ki-eye"></i>
-                                            </a>
-                                            <a class="btn btn-primary btn-icon"
-                                               href="{{ path('app_facturation_edit', {'id': f.id}) }}"
-                                               title="Modifier" aria-label="Modifier">
-                                                <i class="ki-outline ki-pencil"></i>
-                                            </a>
-                                        </div>
-                                    </td>
                                 </tr>
                             {% endfor %}
                             </tbody>
@@ -164,15 +171,64 @@
                 "oPaginate":{"sFirst":"Premier","sLast":"Dernier","sNext":"Suivant","sPrevious":"Précédent"}
             };
             $(function(){
-                $('#facturationTable').DataTable({
+                var dt = $('#facturationTable').DataTable({
                     language: fr,
                     pageLength: 100,
                     lengthChange: false,
-                    order: [[1,'desc']],   // Mois décroissant (colonne 1 car 'Description' est en 0)
-                    responsive: true,
-                    columnDefs: [
-                        { targets: -1, orderable: false } // actions non triables
-                    ]
+                    dom: 'rtip',
+                    order: [[1,'desc']],
+                    responsive: true
+                });
+
+                // Autocomplete professeur
+                var profInput = $('#filterProf');
+                var sugBox = $('#profSuggestions');
+                var profNames = [];
+                dt.column(0).data().each(function(val){
+                    var name = val.split(/<br\s*\/?>/i)[0].replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
+                    if(name && profNames.indexOf(name) === -1) profNames.push(name);
+                });
+                profNames.sort();
+
+                profInput.on('input', function(){
+                    var v = this.value.toLowerCase();
+                    dt.column(0).search(this.value).draw();
+                    if(!v){ sugBox.hide(); return; }
+                    var matches = profNames.filter(function(n){ return n.toLowerCase().indexOf(v) !== -1; });
+                    if(!matches.length){ sugBox.hide(); return; }
+                    sugBox.html(matches.map(function(n){
+                        return '<div class="px-3 py-2 suggestion-item" style="cursor:pointer">' + n + '</div>';
+                    }).join('')).show();
+                });
+
+                sugBox.on('click', '.suggestion-item', function(){
+                    var val = $(this).text();
+                    profInput.val(val);
+                    dt.column(0).search(val).draw();
+                    sugBox.hide();
+                });
+
+                $(document).on('click', function(e){
+                    if(!$(e.target).closest('#filterProf, #profSuggestions').length) sugBox.hide();
+                });
+
+                // Filtre statut (colonne 5)
+                $('#filterStatut').on('change', function(){
+                    dt.column(5).search(this.value).draw();
+                });
+
+                // Filtre mois (colonne 1)
+                $('#filterMois').on('change', function(){
+                    dt.column(1).search(this.value).draw();
+                });
+
+                // Reset
+                $('#filterReset').on('click', function(){
+                    profInput.val('');
+                    $('#filterStatut').val('');
+                    $('#filterMois').val('');
+                    sugBox.hide();
+                    dt.search('').columns().search('').draw();
                 });
             });
         })();

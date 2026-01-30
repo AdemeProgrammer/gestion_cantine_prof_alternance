@@ -18,7 +18,8 @@
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/duotone/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/outline/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/keenicons/solid/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}">
+    {# DataTables via CDN #}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 {% endblock %}
 
 {% block body %}
@@ -187,9 +188,9 @@
 
                                             {% if promoFacturations|length > 0 %}
                                                 <div class="table-responsive">
-                                                    <table class="table table-row-dashed align-middle gy-3 facturation-table">
+                                                    <table class="table table-sm table-striped align-middle facturation-table">
                                                         <thead>
-                                                            <tr class="text-muted fw-semibold">
+                                                            <tr>
                                                                 <th>Mois</th>
                                                                 <th>Montant total</th>
                                                                 <th>Montant réglé</th>
@@ -258,9 +259,9 @@
 
                         {% if allPaiements|length > 0 %}
                             <div class="table-responsive">
-                                <table id="paiementTable" class="table table-row-dashed align-middle gy-3">
+                                <table id="paiementTable" class="table table-sm table-striped align-middle">
                                     <thead>
-                                        <tr class="text-muted fw-semibold">
+                                        <tr>
                                             <th>Date</th>
                                             <th>Promotion</th>
                                             <th>Montant</th>
@@ -308,7 +309,9 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
     <script>
         (function(){
             const fr = {
@@ -323,31 +326,27 @@
                 "sZeroRecords":"Aucun résultat trouvé",
                 "oPaginate":{"sFirst":"Premier","sLast":"Dernier","sNext":"Suivant","sPrevious":"Précédent"}
             };
-
-            document.addEventListener('DOMContentLoaded', function () {
-                const $ = window.jQuery;
-                if (!$) return;
-
+            $(function(){
                 // DataTable pour les facturations (dans les onglets)
                 $('.facturation-table').each(function() {
                     $(this).DataTable({
                         language: fr,
                         pageLength: 100,
                         lengthChange: false,
+                        dom: 'rtip',
                         order: [[0,'desc']],
-                        responsive: true,
-                        autoWidth: false
+                        responsive: true
                     });
                 });
 
-                // DataTable pour les paiements (tri par date et heure par défaut)
+                // DataTable pour les paiements
                 $('#paiementTable').DataTable({
                     language: fr,
                     pageLength: 100,
                     lengthChange: false,
-                    order: [[0,'desc']],  // Tri par date décroissant (plus récent en premier)
+                    dom: 'rtip',
+                    order: [[0,'desc']],
                     responsive: true,
-                    autoWidth: false,
                     columnDefs: [
                         { targets: 0, type: 'date' }
                     ]
